@@ -1,34 +1,46 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:forui/forui.dart';
 import 'package:tharpom_mx/main.dart';
 
 void main() {
-  testWidgets('muestra la demo de Tarpon y alterna el consejo', (tester) async {
+  testWidgets('compara los tres estilos y muestra los datos simulados', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(const TarponApp());
 
-    expect(find.text('Tarpon'), findsOneWidget);
-    expect(find.byType(FCard), findsOneWidget);
-    expect(find.text('Pesca deportiva en Ciudad del Carmen'), findsOneWidget);
-    expect(
-      find.text('Consejo: revisa el clima antes de salir a pescar.'),
-      findsNothing,
-    );
+    expect(find.text('Océano nocturno'), findsOneWidget);
+    expect(find.text('CLIMA DE EJEMPLO'), findsOneWidget);
+    expect(find.byType(FCard), findsWidgets);
 
-    await tester.tap(find.text('Ver consejo'));
+    await tester.tap(find.text('Cambiar estilo'));
     await tester.pump(const Duration(milliseconds: 200));
+    expect(find.text('Costa clara'), findsOneWidget);
 
-    expect(
-      find.text('Consejo: revisa el clima antes de salir a pescar.'),
-      findsOneWidget,
-    );
-    expect(find.text('Ocultar consejo'), findsOneWidget);
-
-    await tester.tap(find.text('Ocultar consejo'));
+    await tester.tap(find.text('Cambiar estilo'));
     await tester.pump(const Duration(milliseconds: 200));
+    expect(find.text('Trópico en movimiento'), findsOneWidget);
 
-    expect(
-      find.text('Consejo: revisa el clima antes de salir a pescar.'),
-      findsNothing,
+    await tester.scrollUntilVisible(
+      find.text('Lugares para explorar'),
+      250,
+      scrollable: find.byType(Scrollable).first,
     );
+    expect(find.text('Laguna de Términos'), findsWidgets);
+    await tester.scrollUntilVisible(
+      find.text('Señuelo de superficie'),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Equipo recomendado'), findsOneWidget);
+    expect(find.text('Señuelo de superficie'), findsOneWidget);
+
+    await tester.tap(find.text('Cambiar estilo'));
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(find.text('Océano nocturno'), findsOneWidget);
   });
 }

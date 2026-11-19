@@ -1,81 +1,154 @@
 import 'package:flutter/material.dart';
 
-// Importamos los datos de las tarjetas del inicio.
-import '../../compartido/datos/dashboard_mock.dart';
+// Identificadores de nuestros módulos.
+import '../../nucleo/modulo_app.dart';
 
-// Importamos el componente de las tarjetas.
-import '../../compartido/widgets/tarjeta_dashboard.dart';
-
-// Importamos nuestro logotipo reutilizable.
+// Componentes visuales reutilizables.
 import '../../compartido/widgets/logo_tarpon.dart';
+import '../../compartido/widgets/banner_inicio.dart';
 
 /// =====================================================
-/// PANTALLA DE INICIO DE TARPON MX
+/// PANTALLA PRINCIPAL DE TARPON MX
 /// =====================================================
 ///
-/// Responsabilidades:
-/// 1. Mostrar el nombre de la aplicación.
-/// 2. Mostrar el logotipo oficial.
-/// 3. Presentar las tarjetas informativas.
+/// Esta pantalla muestra únicamente:
 ///
-/// Esta pantalla no administra datos directamente.
-/// Utiliza los datos de dashboard_mock.dart.
+/// 1. Logotipo oficial.
+/// 2. Banner de Clima.
+/// 3. Banner de Mareas.
+/// 4. Banner de Equipo.
+/// 5. Banner de Mapa.
+///
+/// Los banners permiten navegar a sus módulos.
+///
+/// No creamos AppBar porque la barra superior
+/// pertenece a PantallaNavegacion.
 class PantallaInicio extends StatelessWidget {
-  /// Constructor de la pantalla.
-  const PantallaInicio({super.key});
+  /// Función utilizada para abrir un módulo.
+  final ValueChanged<ModuloApp> onAbrirModulo;
 
+  /// Constructor de nuestra pantalla.
+  const PantallaInicio({super.key, required this.onAbrirModulo});
+
+  /// Construye la interfaz principal.
   @override
   Widget build(BuildContext context) {
-    // Scaffold proporciona la estructura
-    // principal de nuestra pantalla.
     return Scaffold(
-      // Barra superior de la aplicación.
-      appBar: AppBar(title: const Text('TARPON MX'), centerTitle: true),
+      // Permite desplazar el contenido cuando
+      // la pantalla del teléfono es pequeña.
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
 
-      // SingleChildScrollView permite desplazar
-      // la pantalla verticalmente.
-      body: SingleChildScrollView(
-        // Espacio entre los bordes de la pantalla
-        // y los elementos de su interior.
-        padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
 
-        child: Column(
-          // Los elementos se expanden horizontalmente
-          // para aprovechar el espacio disponible.
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // =====================================
+              // LOGOTIPO OFICIAL
+              // =====================================
 
-          children: [
-            // =========================================
-            // LOGOTIPO OFICIAL
-            // =========================================
+              const Center(child: LogoTarpon(ancho: 240, alto: 165)),
 
-            const Center(child: LogoTarpon(ancho: 250, alto: 180)),
+              const SizedBox(height: 20),
 
-            // Espacio entre el logotipo y las tarjetas.
-            const SizedBox(height: 20),
+              // =====================================
+              // CLIMA Y MAREAS
+              // =====================================
 
-            // =========================================
-            // TARJETAS INFORMATIVAS
-            // =========================================
+              // Row coloca dos tarjetas
+              // horizontalmente.
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
 
-            // Recorremos la lista de tarjetas
-            // definida en dashboard_mock.dart.
-            //
-            // El operador ... incorpora cada widget
-            // generado a la lista de elementos.
-            ...tarjetasDashboard.map((tarjeta) {
-              return TarjetaDashboard(
-                // Icono de la tarjeta.
-                icono: tarjeta.icono,
+                children: [
+                  // CLIMA
+                  Expanded(
+                    child: BannerInicio(
+                      key: const Key('banner_clima'),
 
-                // Título de la tarjeta.
-                titulo: tarjeta.titulo,
+                      titulo: 'Clima',
 
-                // Descripción informativa.
-                descripcion: tarjeta.descripcion,
-              );
-            }),
-          ],
+                      descripcion:
+                          'Condiciones meteorológicas '
+                          'de Ciudad del Carmen.',
+
+                      icono: Icons.cloud_outlined,
+
+                      compacto: true,
+
+                      onTap: () {
+                        onAbrirModulo(ModuloApp.clima);
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  // MAREAS
+                  Expanded(
+                    child: BannerInicio(
+                      key: const Key('banner_mareas'),
+
+                      titulo: 'Mareas',
+
+                      descripcion: 'Consulta pleamar y bajamar.',
+
+                      icono: Icons.waves,
+
+                      compacto: true,
+
+                      onTap: () {
+                        onAbrirModulo(ModuloApp.mareas);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // =====================================
+              // EQUIPO DE LA TIENDA
+              // =====================================
+              BannerInicio(
+                key: const Key('banner_equipo'),
+
+                titulo: 'Equipo de la tienda',
+
+                descripcion:
+                    'Descubre artículos de pesca '
+                    'y promociones de Tarpon MX.',
+
+                icono: Icons.shopping_bag_outlined,
+
+                onTap: () {
+                  onAbrirModulo(ModuloApp.equipo);
+                },
+              ),
+
+              const SizedBox(height: 16),
+
+              // =====================================
+              // MAPA DE PESCA
+              // =====================================
+              BannerInicio(
+                key: const Key('banner_mapa'),
+
+                titulo: 'Mapa de pesca',
+
+                descripcion:
+                    'Explora los puntos de pesca '
+                    'de Ciudad del Carmen.',
+
+                icono: Icons.map_outlined,
+
+                onTap: () {
+                  onAbrirModulo(ModuloApp.mapa);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

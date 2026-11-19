@@ -45,7 +45,7 @@ class TarjetaDashboard extends StatelessWidget {
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.blue.withValues(alpha: 0.5),
             blurRadius: 12,
             offset: const Offset(0, 5),
           ),

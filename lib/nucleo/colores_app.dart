@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// =====================================================
-/// COLORES CORPORATIVOS THARPOM MX
+/// COLORES CORPORATIVOS TARPON MX
 /// =====================================================
 ///
 /// Toda la aplicación utilizará estos colores.

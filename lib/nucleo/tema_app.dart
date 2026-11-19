@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'colores_app.dart';
 
 /// =====================================================
-/// TEMA GLOBAL DE THARPOM MX
+/// TEMA GLOBAL DE TARPON MX
 /// =====================================================
 ///
 /// Aquí se configura la apariencia general

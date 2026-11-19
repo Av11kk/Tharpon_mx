@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-// Importamos la configuración visual de THARPOM MX.
+// Importamos la configuración visual de TARPON MX.
 // Aquí se definen los colores y estilos generales.
 import 'nucleo/tema_app.dart';
 
@@ -9,7 +9,7 @@ import 'nucleo/tema_app.dart';
 import 'modulos/navegacion/pantalla_navegacion.dart';
 
 /// =====================================================
-/// PUNTO DE ENTRADA DE THARPOM MX
+/// PUNTO DE ENTRADA DE TARPON MX
 /// =====================================================
 ///
 /// La función main() es la primera que se ejecuta
@@ -20,15 +20,15 @@ import 'modulos/navegacion/pantalla_navegacion.dart';
 void main() {
   // runApp() inicia la interfaz gráfica de Flutter.
   //
-  // TharpomMX es nuestra clase principal.
+  // TarponMX es nuestra clase principal.
   //
   // Utilizamos const porque este widget puede
   // construirse con una configuración constante.
-  runApp(const TharpomMX());
+  runApp(const TarponMX());
 }
 
 /// =====================================================
-/// CLASE PRINCIPAL DE THARPOM MX
+/// CLASE PRINCIPAL DE TARPON MX
 /// =====================================================
 ///
 /// Esta clase representa la raíz de la aplicación.
@@ -42,12 +42,12 @@ void main() {
 /// 2. El tema visual.
 /// 3. La pantalla inicial.
 /// 4. Las opciones generales de presentación.
-class TharpomMX extends StatelessWidget {
+class TarponMX extends StatelessWidget {
   // Constructor de nuestra clase principal.
   //
   // super.key permite identificar este widget
   // dentro del árbol de widgets de Flutter.
-  const TharpomMX({super.key});
+  const TarponMX({super.key});
 
   /// Método encargado de construir la interfaz
   /// correspondiente a este widget.

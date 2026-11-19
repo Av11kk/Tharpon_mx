@@ -8,7 +8,7 @@ import '../perfil/pantalla_perfil.dart';
 
 /// Pantalla principal de navegación.
 ///
-/// Controla el menú inferior de THARPOM MX.
+/// Controla el menú inferior de TARPON MX.
 class PantallaNavegacion extends StatefulWidget {
   const PantallaNavegacion({super.key});
 

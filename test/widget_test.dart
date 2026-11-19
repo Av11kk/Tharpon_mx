@@ -2,24 +2,55 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tarpon_mx/main.dart';
 
+/// Pruebas básicas de la navegación de Tarpon MX.
 void main() {
-  // Agrupamos las pruebas principales de TARPON MX.
-  group('Pruebas de TARPON MX', () {
-    // Comprueba que la aplicación inicia correctamente.
-    testWidgets('La aplicación muestra la pantalla de inicio', (
-      WidgetTester tester,
-    ) async {
-      // Inicia la aplicación dentro del entorno de pruebas.
-      await tester.pumpWidget(const TarponMX());
+  testWidgets('La aplicación inicia correctamente', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const TarponMX());
 
-      // Espera a que se construyan las pantallas.
-      await tester.pumpAndSettle();
+    expect(find.byType(MaterialApp), findsOneWidget);
 
-      // Verifica que aparece el título de la aplicación.
-      expect(find.text('TARPON MX'), findsOneWidget);
+    expect(find.byKey(const Key('boton_menu')), findsOneWidget);
 
-      // Verifica que existe el menú de navegación inferior.
-      expect(find.byType(BottomNavigationBar), findsOneWidget);
-    });
+    expect(find.byKey(const Key('boton_perfil')), findsOneWidget);
+  });
+
+  testWidgets('El menú muestra los siete módulos', (WidgetTester tester) async {
+    await tester.pumpWidget(const TarponMX());
+
+    // Abre el menú desplegable.
+    await tester.tap(find.byKey(const Key('boton_menu')));
+
+    await tester.pumpAndSettle();
+
+    // Verifica las opciones disponibles.
+    for (final nombre in [
+      'Inicio',
+      'Especies',
+      'Clima',
+      'Mareas',
+      'Mapa',
+      'Equipo',
+      'Consejos',
+    ]) {
+      expect(find.text(nombre), findsWidgets);
+    }
+  });
+
+  testWidgets('El usuario puede navegar a Clima', (WidgetTester tester) async {
+    await tester.pumpWidget(const TarponMX());
+
+    await tester.tap(find.byKey(const Key('boton_menu')));
+
+    await tester.pumpAndSettle();
+
+    // Seleccionamos Clima desde el menú.
+    await tester.tap(find.text('Clima').last);
+
+    await tester.pumpAndSettle();
+
+    // Verifica que el menú volvió a cerrarse.
+    expect(find.byType(PopupMenuItem), findsNothing);
   });
 }

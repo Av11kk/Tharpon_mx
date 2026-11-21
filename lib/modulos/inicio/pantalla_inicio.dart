@@ -6,6 +6,8 @@ import '../../nucleo/modulo_app.dart';
 // Componentes visuales reutilizables.
 import '../../compartido/widgets/logo_tarpon.dart';
 import '../../compartido/widgets/banner_inicio.dart';
+import '../../compartido/modelos/clima_actual.dart';
+import '../../compartido/servicios/servicio_clima.dart';
 
 /// =====================================================
 /// PANTALLA PRINCIPAL DE TARPON MX
@@ -63,22 +65,47 @@ class PantallaInicio extends StatelessWidget {
 
                 children: [
                   // CLIMA
+
                   Expanded(
-                    child: BannerInicio(
-                      key: const Key('banner_clima'),
+                    child: FutureBuilder<ClimaActual>(
+                      // Utilizamos el mismo servicio que PantallaClima.
+                      future: ServicioClima.instancia.obtenerClima(),
 
-                      titulo: 'Clima',
+                      builder: (context, snapshot) {
+                        // Texto mostrado mientras se descargan datos.
+                        String descripcion = 'Consultando clima...';
 
-                      descripcion:
-                          'Condiciones meteorológicas '
-                          'de Ciudad del Carmen.',
+                        // Si recibimos información correcta,
+                        // mostramos temperatura y viento.
+                        if (snapshot.hasData) {
+                          final clima = snapshot.data!;
 
-                      icono: Icons.cloud_outlined,
+                          descripcion =
+                              '${clima.temperatura.toStringAsFixed(1)} °C\n'
+                              'Viento: '
+                              '${clima.velocidadViento.toStringAsFixed(0)} km/h';
+                        }
 
-                      compacto: true,
+                        // Si la consulta falla, no mostramos
+                        // información inventada.
+                        if (snapshot.hasError) {
+                          descripcion = 'Información no disponible';
+                        }
 
-                      onTap: () {
-                        onAbrirModulo(ModuloApp.clima);
+                        // Mostramos el banner interactivo.
+                        return BannerInicio(
+                          key: const Key('banner_clima'),
+
+                          titulo: 'Clima',
+                          descripcion: descripcion,
+                          icono: Icons.cloud_outlined,
+                          compacto: true,
+
+                          // Abre el módulo completo de Clima.
+                          onTap: () {
+                            onAbrirModulo(ModuloApp.clima);
+                          },
+                        );
                       },
                     ),
                   ),

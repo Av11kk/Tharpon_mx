@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-// Colores e identificadores de Tarpon MX.
+// Colores e identificadores de los módulos.
 import '../../nucleo/colores_app.dart';
 import '../../nucleo/modulo_app.dart';
 
-// Importación de las pantallas existentes.
+// Pantallas de la aplicación.
 import '../inicio/pantalla_inicio.dart';
 import '../especies/pantalla_especies.dart';
 import '../clima/pantalla_clima.dart';
@@ -18,16 +18,15 @@ import '../perfil/pantalla_perfil.dart';
 /// NAVEGACIÓN PRINCIPAL DE TARPON MX
 /// =====================================================
 ///
-/// Esta clase administra:
+/// Esta pantalla controla:
+/// - El encabezado global.
+/// - El menú desplegable superior izquierdo.
+/// - El acceso al Perfil.
+/// - El módulo seleccionado.
+/// - La navegación desde los banners del Inicio.
 ///
-/// 1. El menú desplegable superior izquierdo.
-/// 2. Los siete módulos principales.
-/// 3. El botón de perfil superior derecho.
-/// 4. La navegación desde los banners de Inicio.
-///
-/// Ya no utilizamos la barra de navegación inferior
-/// ni el menú vertical flotante.
-
+/// Todas las secciones principales comparten
+/// la misma barra superior.
 class PantallaNavegacion extends StatefulWidget {
   const PantallaNavegacion({super.key});
 
@@ -36,20 +35,12 @@ class PantallaNavegacion extends StatefulWidget {
 }
 
 class _PantallaNavegacionState extends State<PantallaNavegacion> {
-  // ===================================================
-  // MÓDULO ACTUAL
-  // ===================================================
-
-  /// Guarda la pantalla seleccionada.
-  ///
-  /// Inicialmente mostramos Inicio.
+  /// Módulo que se muestra actualmente.
   ModuloApp moduloActual = ModuloApp.inicio;
 
-  // ===================================================
-  // DATOS DEL MENÚ
-  // ===================================================
-
-  /// Nombres que aparecerán en el menú.
+  /// Nombres de las secciones principales.
+  ///
+  /// El orden debe coincidir con ModuloApp.
   static const List<String> nombres = [
     'Inicio',
     'Especies',
@@ -60,9 +51,7 @@ class _PantallaNavegacionState extends State<PantallaNavegacion> {
     'Consejos',
   ];
 
-  /// Iconos correspondientes a las secciones.
-  ///
-  /// El orden coincide con ModuloApp.
+  /// Iconos de cada módulo.
   static const List<IconData> iconos = [
     Icons.home_outlined,
     Icons.phishing,
@@ -73,17 +62,12 @@ class _PantallaNavegacionState extends State<PantallaNavegacion> {
     Icons.menu_book_outlined,
   ];
 
-  // ===================================================
-  // CAMBIAR DE MÓDULO
-  // ===================================================
-
-  /// Recibe el módulo al que queremos navegar.
+  /// Cambia el módulo visible.
   ///
-  /// Esta función sirve tanto para el menú
-  /// como para los banners de Inicio.
+  /// Esta función es utilizada por el menú
+  /// desplegable y los banners del Inicio.
   void cambiarModulo(ModuloApp nuevoModulo) {
-    // Evitamos reconstrucciones innecesarias.
-    if (moduloActual == nuevoModulo) {
+    if (nuevoModulo == moduloActual) {
       return;
     }
 
@@ -92,191 +76,138 @@ class _PantallaNavegacionState extends State<PantallaNavegacion> {
     });
   }
 
-  // ===================================================
-  // ABRIR EL PERFIL
-  // ===================================================
-
-  /// Abre la pantalla del perfil mediante
-  /// una nueva ruta de navegación.
+  /// Abre el Perfil como una nueva pantalla.
   ///
-  /// El usuario podrá volver a la sección
-  /// en la que se encontraba anteriormente.
+  /// Cuando el usuario regrese, continuará
+  /// en el módulo que estaba consultando.
   void abrirPerfil() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (context) => const PantallaPerfil()),
     );
   }
 
-  // ===================================================
-  // CONTENIDO DE LA APLICACIÓN
-  // ===================================================
-
-  /// IndexedStack conserva los widgets de las
-  /// pantallas mientras cambiamos de módulo.
+  /// Construye las opciones del menú desplegable.
   ///
-  /// Esto será útil cuando implementemos
-  /// formularios y otras funcionalidades.
+  /// PopupMenuItem representa una opción
+  /// que el usuario puede seleccionar.
+  List<PopupMenuEntry<ModuloApp>> construirOpciones() {
+    return [
+      for (int i = 0; i < ModuloApp.values.length; i++)
+        PopupMenuItem<ModuloApp>(
+          key: Key('opcion_${ModuloApp.values[i].name}'),
+
+          // Identificador del módulo.
+          value: ModuloApp.values[i],
+
+          child: Row(
+            children: [
+              Icon(iconos[i], color: ColoresApp.azulMarino),
+
+              const SizedBox(width: 12),
+
+              Expanded(child: Text(nombres[i])),
+
+              // Indica la opción seleccionada.
+              if (moduloActual == ModuloApp.values[i])
+                const Icon(Icons.check, color: ColoresApp.azulOceano, size: 18),
+            ],
+          ),
+        ),
+    ];
+  }
+
+  /// Construye el botón superior izquierdo.
+  Widget construirMenu() {
+    return PopupMenuButton<ModuloApp>(
+      key: const Key('boton_menu'),
+
+      tooltip: 'Abrir menú',
+
+      // Abre el módulo seleccionado.
+      onSelected: cambiarModulo,
+
+      // Opciones que aparecerán al presionar.
+      itemBuilder: (context) => construirOpciones(),
+
+      // Estilo del menú.
+      color: ColoresApp.blanco,
+      elevation: 5,
+
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+
+      // Icono de tres líneas.
+      icon: const Icon(Icons.menu),
+    );
+  }
+
+  /// Construye la barra superior compartida.
+  PreferredSizeWidget construirBarraSuperior() {
+    return AppBar(
+      // Botón desplegable superior izquierdo.
+      leading: construirMenu(),
+
+      // Nombre comercial de la aplicación.
+      title: const Text('TARPON MX'),
+
+      // Centra el nombre de la aplicación.
+      centerTitle: true,
+
+      // Botones de la esquina derecha.
+      actions: [
+        IconButton(
+          key: const Key('boton_perfil'),
+
+          tooltip: 'Abrir perfil',
+
+          onPressed: abrirPerfil,
+
+          icon: const Icon(Icons.account_circle_outlined, size: 28),
+        ),
+
+        const SizedBox(width: 8),
+      ],
+    );
+  }
+
+  /// Construye las siete pantallas principales.
+  ///
+  /// IndexedStack conserva las pantallas
+  /// montadas cuando cambiamos de sección.
+  ///
+  /// IMPORTANTE:
+  /// Las pantallas internas ya no deben
+  /// construir su propia AppBar.
   Widget construirContenido() {
     return IndexedStack(
       index: moduloActual.index,
 
       children: [
-        // Inicio recibe la función de navegación
-        // para conectar sus cuatro banners.
         PantallaInicio(onAbrirModulo: cambiarModulo),
 
         const PantallaEspecies(),
+
         const PantallaClima(),
+
         const PantallaMareas(),
+
         const PantallaMapa(),
+
         const PantallaEquipamiento(),
+
         const PantallaConsejos(),
       ],
     );
   }
 
-  // ===================================================
-  // MENÚ DESPLEGABLE
-  // ===================================================
-
-  /// Construye el botón de tres líneas que
-  /// despliega los módulos de Tarpon MX.
-  Widget construirMenu() {
-    return PopupMenuButton<ModuloApp>(
-      // Identificador para las pruebas.
-      key: const Key('boton_menu'),
-
-      // Texto de accesibilidad.
-      tooltip: 'Abrir menú',
-
-      // Al seleccionar una opción,
-      // cambiamos el módulo actual.
-      onSelected: cambiarModulo,
-
-      // Diseño del menú desplegable.
-      color: ColoresApp.blanco,
-
-      elevation: 6,
-
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-
-      // Generamos las siete opciones
-      // utilizando nuestra enumeración.
-      itemBuilder: (BuildContext context) {
-        return [
-          for (int i = 0; i < ModuloApp.values.length; i++)
-            PopupMenuItem<ModuloApp>(
-              // Identificador del módulo.
-              value: ModuloApp.values[i],
-
-              // Espacio de la opción.
-              child: Row(
-                children: [
-                  // Icono de la sección.
-                  Icon(iconos[i], color: ColoresApp.azulMarino, size: 22),
-
-                  const SizedBox(width: 12),
-
-                  // Nombre de la sección.
-                  Text(
-                    nombres[i],
-                    style: const TextStyle(
-                      color: ColoresApp.textoPrincipal,
-                      fontSize: 14,
-                    ),
-                  ),
-
-                  // Marca la sección seleccionada.
-                  if (moduloActual == ModuloApp.values[i]) ...[
-                    const Spacer(),
-
-                    const Icon(
-                      Icons.check,
-                      color: ColoresApp.azulOceano,
-                      size: 18,
-                    ),
-                  ],
-                ],
-              ),
-            ),
-        ];
-      },
-
-      // Botón visible cuando el menú está cerrado.
-      child: Container(
-        width: 46,
-        height: 46,
-
-        decoration: BoxDecoration(
-          color: ColoresApp.azulMarino,
-          borderRadius: BorderRadius.circular(12),
-        ),
-
-        child: const Icon(Icons.menu, color: Colors.white, size: 26),
-      ),
-    );
-  }
-
-  // ===================================================
-  // BOTÓN DE PERFIL
-  // ===================================================
-
-  /// Construye el botón que abre el perfil.
-  Widget construirBotonPerfil() {
-    return Material(
-      color: ColoresApp.azulMarino,
-      shape: const CircleBorder(),
-
-      child: IconButton(
-        key: const Key('boton_perfil'),
-
-        tooltip: 'Abrir perfil',
-
-        onPressed: abrirPerfil,
-
-        icon: const Icon(Icons.person_outline, color: Colors.white),
-      ),
-    );
-  }
-
-  // ===================================================
-  // CONSTRUCCIÓN PRINCIPAL
-  // ===================================================
-
+  /// Construcción principal de la navegación.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          // ===========================================
-          // CONTENIDO DEL MÓDULO SELECCIONADO
-          // ===========================================
+      // Única barra superior principal.
+      appBar: construirBarraSuperior(),
 
-          Positioned.fill(child: construirContenido()),
-
-          // ===========================================
-          // MENÚ SUPERIOR IZQUIERDO
-          // ===========================================
-          Positioned(
-            top: 0,
-            left: 12,
-
-            // SafeArea evita la barra de estado
-            // y otros espacios del sistema.
-            child: SafeArea(child: construirMenu()),
-          ),
-
-          // ===========================================
-          // PERFIL SUPERIOR DERECHO
-          // ===========================================
-          Positioned(
-            top: 0,
-            right: 12,
-
-            child: SafeArea(child: construirBotonPerfil()),
-          ),
-        ],
-      ),
+      // Contenido del módulo seleccionado.
+      body: construirContenido(),
     );
   }
 }

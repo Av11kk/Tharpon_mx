@@ -1,75 +1,108 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-// Importamos la configuración visual de TARPON MX.
-// Aquí se definen los colores y estilos generales.
+import 'compartido/servicios/almacen_sesion.dart';
+import 'compartido/servicios/servicio_autenticacion.dart';
+import 'modulos/autenticacion/control_acceso.dart';
+import 'modulos/autenticacion/pantalla_login.dart';
 import 'nucleo/tema_app.dart';
 
-// Importamos la pantalla que administra
-// el menú de navegación principal.
-import 'modulos/navegacion/pantalla_navegacion.dart';
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  const url = String.fromEnvironment('SUPABASE_URL');
+  const clave = String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
+  const retornoWeb = String.fromEnvironment('SUPABASE_AUTH_REDIRECT_URL');
+  const prefijoPublicable = 'sb_publishable_';
+  final uri = Uri.tryParse(url);
+  if (uri == null ||
+      uri.scheme != 'https' ||
+      uri.host.isEmpty ||
+      !clave.startsWith(prefijoPublicable) ||
+      clave.length == prefijoPublicable.length) {
+    runApp(const TarponMX());
+    return;
+  }
 
-/// =====================================================
-/// PUNTO DE ENTRADA DE TARPON MX
-/// =====================================================
-///
-/// La función main() es la primera que se ejecuta
-/// cuando se inicia nuestra aplicación.
-///
-/// Desde aquí le indicamos a Flutter cuál es
-/// el widget principal que debe mostrar.
-void main() {
-  // runApp() inicia la interfaz gráfica de Flutter.
-  //
-  // TarponMX es nuestra clase principal.
-  //
-  // Utilizamos const porque este widget puede
-  // construirse con una configuración constante.
-  runApp(const TarponMX());
+  try {
+    final esMovil =
+        !kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS);
+    final destino = esMovil
+        ? 'tharponmx://auth/callback'
+        : (retornoWeb.isEmpty ? null : retornoWeb);
+    final claveAnterior = 'sb-${uri.host.split('.').first}-auth-token';
+    final almacen = AlmacenSesion(
+      SharedPreferencesLocalStorage(persistSessionKey: '$claveAnterior-v2'),
+      anterior: SharedPreferencesLocalStorage(persistSessionKey: claveAnterior),
+    );
+    final callback = destino == null ? null : Uri.parse(destino);
+    final supabase = await Supabase.initialize(
+      url: url,
+      publishableKey: clave,
+      authOptions: FlutterAuthClientOptions(
+        authFlowType: AuthFlowType.pkce,
+        localStorage: almacen,
+        pkceAsyncStorage: AlmacenVerificadorPkce(
+          SharedPreferencesGotrueAsyncStorage(),
+          almacen,
+        ),
+        detectSessionInUriPredicate: (enlace) {
+          if (callback != null &&
+              (enlace.scheme != callback.scheme ||
+                  enlace.authority != callback.authority ||
+                  enlace.path != callback.path)) {
+            return false;
+          }
+          final query = enlace.queryParameters;
+          final fragmento = Uri.splitQueryString(enlace.fragment);
+          if (query.containsKey('access_token') ||
+              fragmento.containsKey('access_token')) {
+            return false;
+          }
+          return query.containsKey('code') ||
+              query.containsKey('error') ||
+              fragmento.containsKey('error');
+        },
+      ),
+    );
+    runApp(
+      TarponMX(
+        servicio: ServicioAutenticacion(
+          supabase.client,
+          redireccion: destino,
+          almacen: almacen,
+        ),
+      ),
+    );
+  } catch (_) {
+    runApp(
+      const TarponMX(
+        errorInicio:
+            'No se pudo iniciar la autenticación. Reinicia la aplicación.',
+      ),
+    );
+  }
 }
 
-/// =====================================================
-/// CLASE PRINCIPAL DE TARPON MX
-/// =====================================================
-///
-/// Esta clase representa la raíz de la aplicación.
-///
-/// Hereda de StatelessWidget porque no necesita
-/// administrar un estado interno que cambie.
-///
-/// Su responsabilidad es configurar:
-///
-/// 1. La aplicación Material.
-/// 2. El tema visual.
-/// 3. La pantalla inicial.
-/// 4. Las opciones generales de presentación.
 class TarponMX extends StatelessWidget {
-  // Constructor de nuestra clase principal.
-  //
-  // super.key permite identificar este widget
-  // dentro del árbol de widgets de Flutter.
-  const TarponMX({super.key});
+  const TarponMX({super.key, this.servicio, this.errorInicio});
 
-  /// Método encargado de construir la interfaz
-  /// correspondiente a este widget.
+  final ServicioAutenticacion? servicio;
+  final String? errorInicio;
+
   @override
   Widget build(BuildContext context) {
-    // MaterialApp proporciona la configuración
-    // principal de una aplicación Material Design.
+    final autenticacion = servicio;
     return MaterialApp(
-      // Oculta la etiqueta DEBUG que aparece
-      // durante el desarrollo.
       debugShowCheckedModeBanner: false,
-
-      // Aplica el tema visual definido
-      // en nuestro archivo tema_app.dart.
       theme: TemaApp.temaClaro,
-
-      // Define la primera pantalla de la app.
-      //
-      // PantallaNavegacion administra las
-      // diferentes secciones mediante
-      // el menú inferior.
-      home: const PantallaNavegacion(),
+      home: autenticacion == null
+          ? PantallaEstadoAcceso(
+              mensaje: errorInicio ?? 'Configura SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY para continuar.',
+            )
+          : ControlAcceso(servicio: autenticacion),
     );
   }
 }

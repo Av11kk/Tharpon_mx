@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../compartido/servicios/servicio_autenticacion.dart';
 // Colores e identificadores de los módulos.
 import '../../nucleo/colores_app.dart';
 import '../../nucleo/modulo_app.dart';
@@ -28,7 +29,10 @@ import '../perfil/pantalla_perfil.dart';
 /// Todas las secciones principales comparten
 /// la misma barra superior.
 class PantallaNavegacion extends StatefulWidget {
-  const PantallaNavegacion({super.key});
+  const PantallaNavegacion({super.key, this.perfil, this.cerrarSesion});
+
+  final PerfilAutenticado? perfil;
+  final Future<void> Function()? cerrarSesion;
 
   @override
   State<PantallaNavegacion> createState() => _PantallaNavegacionState();
@@ -82,7 +86,12 @@ class _PantallaNavegacionState extends State<PantallaNavegacion> {
   /// en el módulo que estaba consultando.
   void abrirPerfil() {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (context) => const PantallaPerfil()),
+      MaterialPageRoute<void>(
+        builder: (context) => PantallaPerfil(
+          perfil: widget.perfil,
+          cerrarSesion: widget.cerrarSesion,
+        ),
+      ),
     );
   }
 

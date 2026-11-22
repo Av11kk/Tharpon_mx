@@ -1,219 +1,239 @@
 import 'package:flutter/material.dart';
 
-// Modelo de los datos meteorológicos.
-import '../../compartido/modelos/clima_actual.dart';
+import '../../compartido/servicios/servicio_geografico.dart';
+import '../../compartido/widgets/contenido_cliente.dart';
+import '../../compartido/widgets/controles_app.dart';
+import '../../compartido/widgets/panel_geografico.dart';
 
-// Servicio que consulta Open-Meteo.
-import '../../compartido/servicios/servicio_clima.dart';
-
-// Colores corporativos.
-import '../../nucleo/colores_app.dart';
-
-/// =====================================================
-/// PANTALLA DE CLIMA DE TARPON MX
-/// =====================================================
-///
-/// Muestra información meteorológica real
-/// correspondiente a Ciudad del Carmen.
-///
-/// Estados de la pantalla:
-///
-/// 1. Cargando información.
-/// 2. Datos obtenidos correctamente.
-/// 3. Error al consultar el servicio.
-///
-/// Utilizamos StatefulWidget para administrar
-/// la consulta y permitir actualizarla.
-class PantallaClima extends StatefulWidget {
-  const PantallaClima({super.key});
+class PantallaClima extends StatelessWidget {
+  const PantallaClima({super.key, required this.entorno});
+  final EntornoGeo entorno;
 
   @override
-  State<PantallaClima> createState() => _PantallaClimaState();
-}
-
-class _PantallaClimaState extends State<PantallaClima> {
-  /// Guarda la operación que obtiene el clima.
-  late Future<ClimaActual> _consulta;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Obtenemos los datos al crear la pantalla.
-    _consulta = ServicioClima.instancia.obtenerClima();
-  }
-
-  /// Actualiza la información al presionar
-  /// el botón de recarga.
-  void actualizar() {
-    setState(() {
-      _consulta = ServicioClima.instancia.actualizarClima();
-    });
-  }
-
-  /// Construye una tarjeta con información.
-  Widget construirDato({
-    required IconData icono,
-    required String titulo,
-    required String valor,
-  }) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Row(
+  Widget build(BuildContext context) => ValueListenableBuilder(
+    valueListenable: entorno.localidad,
+    builder: (context, sitio, _) => ListaCliente(
+      children: [
+        EncabezadoApp(
+          titulo: 'Clima',
+          descripcion: sitio.nombre,
+          destacado: true,
+        ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
           children: [
-            Icon(icono, color: ColoresApp.etiqueta, size: 30),
-
-            const SizedBox(width: 16),
-
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(titulo),
-
-                  const SizedBox(height: 5),
-
-                  Text(
-                    valor,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
+            BotonSecundario(
+              texto: 'Elegir localidad',
+              alPulsar: () async {
+                final seleccion = await elegirLocalidad(context, entorno);
+                if (context.mounted && seleccion != null) {
+                  entorno.localidad.value = seleccion;
+                }
+              },
+            ),
+            IconButton(
+              tooltip: 'Actualizar clima',
+              onPressed: entorno.actualizarClima,
+              icon: const Icon(Icons.refresh),
             ),
           ],
         ),
-      ),
-    );
-  }
+        ConsultaGeo(
+          consulta: entorno.clima,
+          recargar: entorno.actualizarClima,
+          builder: (datos) => _Pronostico(datos: datos),
+        ),
+      ],
+    ),
+  );
+}
 
-  /// Construye la pantalla.
+class _Pronostico extends StatelessWidget {
+  const _Pronostico({required this.datos});
+  final RespuestaGeo<PronosticoGeo> datos;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: FutureBuilder<ClimaActual>(
-        future: _consulta,
-
-        builder: (context, snapshot) {
-          // ==========================================
-          // ESTADO: CARGANDO
-          // ==========================================
-
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          // ==========================================
-          // ESTADO: ERROR
-          // ==========================================
-
-          if (snapshot.hasError || !snapshot.hasData) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+    final pronostico = datos.datos;
+    final actual = pronostico.actual;
+    final hoy = pronostico.dias.firstOrNull;
+    final proxima = pronostico.siguientes.firstOrNull;
+    final texto = Theme.of(context).textTheme;
+    String valor(String c, String u, {int decimales = 0}) =>
+        medidaGeo(actual.numero(c), u, decimales: decimales);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: 12,
+      children: [
+        TarjetaApp(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: 8,
+            children: [
+              Text(
+                condicionGeo(actual.numero('weather_code')),
+                style: texto.bodyMedium,
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      valor('temperature_2m', ' °C'),
+                      style: texto.displaySmall,
+                    ),
+                  ),
+                  Icon(_icono(actual), size: 44),
+                ],
+              ),
+              Text('Sensación ${valor('apparent_temperature', ' °C')}'),
+              Text(
+                'Máx. ${medidaGeo(hoy?.numero('temperature_2m_max'), ' °C')} · Mín. ${medidaGeo(hoy?.numero('temperature_2m_min'), ' °C')}',
+              ),
+              Text(
+                'Modelo: ${horaGeo(actual.hora)} · ${pronostico.zona}',
+                style: texto.bodySmall,
+              ),
+            ],
+          ),
+        ),
+        TarjetaApp(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 12,
+            children: [
+              Text('Próximas horas', style: texto.titleMedium),
+              if (pronostico.siguientes.isEmpty)
+                const Text('Sin pronóstico por hora'),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  spacing: 14,
                   children: [
-                    const Icon(Icons.cloud_off, size: 60),
-
-                    const SizedBox(height: 16),
-
-                    const Text(
-                      'No se pudo consultar el clima.',
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    ElevatedButton.icon(
-                      onPressed: actualizar,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Reintentar'),
-                    ),
+                    for (final paso in pronostico.siguientes)
+                      Semantics(
+                        label: condicionGeo(paso.numero('weather_code')),
+                        child: Column(
+                          spacing: 6,
+                          children: [
+                            Text(horaGeo(paso.hora)),
+                            Icon(_icono(paso)),
+                            Text(medidaGeo(paso.numero('temperature_2m'), '°')),
+                            Text(
+                              medidaGeo(
+                                paso.numero('precipitation_probability'),
+                                '%',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
               ),
-            );
-          }
-
-          // ==========================================
-          // ESTADO: DATOS DISPONIBLES
-          // ==========================================
-
-          final clima = snapshot.data!;
-
-          final hora =
-              '${clima.fechaActualizacion.hour.toString().padLeft(2, '0')}:'
-              '${clima.fechaActualizacion.minute.toString().padLeft(2, '0')}';
-
-          return ListView(
-            padding: const EdgeInsets.all(16),
-
-            children: [
-              const SizedBox(height: 8),
-
-              const Text(
-                'Clima en Ciudad del Carmen',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-
-              const SizedBox(height: 18),
-
-              construirDato(
-                icono: Icons.thermostat,
-                titulo: 'Temperatura',
-                valor: '${clima.temperatura.toStringAsFixed(1)} °C',
-              ),
-
-              construirDato(
-                icono: Icons.air,
-                titulo: 'Viento',
-                valor: '${clima.velocidadViento.toStringAsFixed(1)} km/h',
-              ),
-
-              construirDato(
-                icono: Icons.cloud_outlined,
-                titulo: 'Condiciones',
-                valor: clima.descripcion,
-              ),
-
-              const SizedBox(height: 12),
-
-              Text(
-                'Hora del dato: $hora '
-                '(hora local del dispositivo)',
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: 12),
-
-              ElevatedButton.icon(
-                onPressed: actualizar,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Actualizar clima'),
-              ),
-
-              const SizedBox(height: 16),
-
-              const Text(
-                'Fuente: Open-Meteo. Información '
-                'meteorológica de referencia; '
-                'no sustituye los avisos oficiales '
-                'para navegación.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: ColoresApp.textoSecundario,
-                ),
-              ),
             ],
-          );
-        },
-      ),
+          ),
+        ),
+        TarjetaApp(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 9,
+            children: [
+              Text('Próximos 7 días', style: texto.titleMedium),
+              if (pronostico.dias.isEmpty) const Text('Sin pronóstico diario'),
+              for (final dia in pronostico.dias.take(7))
+                Row(
+                  spacing: 6,
+                  children: [
+                    Expanded(child: Text(diaGeo(dia.hora))),
+                    Icon(_icono(dia), size: 17),
+                    Text(
+                      medidaGeo(
+                        dia.numero('precipitation_probability_max'),
+                        '%',
+                      ),
+                    ),
+                    Text(medidaGeo(dia.numero('temperature_2m_min'), '°')),
+                    Text(medidaGeo(dia.numero('temperature_2m_max'), '°')),
+                  ],
+                ),
+            ],
+          ),
+        ),
+        Text('Detalles del clima', style: texto.titleLarge),
+        for (final (etiqueta, medida) in [
+          (
+            'Viento',
+            '${valor('wind_speed_10m', ' km/h')} ${rumboViento(actual.numero('wind_direction_10m'))}',
+          ),
+          ('Ráfagas', valor('wind_gusts_10m', ' km/h')),
+          ('Humedad', valor('relative_humidity_2m', ' %')),
+          ('Presión en superficie', valor('surface_pressure', ' hPa')),
+          (
+            'Visibilidad horaria',
+            medidaGeo(
+              _kilometros(proxima?.numero('visibility')),
+              ' km',
+              decimales: 1,
+            ),
+          ),
+          (
+            'Índice UV horario',
+            medidaGeo(proxima?.numero('uv_index'), '', decimales: 1),
+          ),
+          ('Nubosidad', valor('cloud_cover', ' %')),
+          (
+            'Probabilidad de lluvia horaria',
+            medidaGeo(proxima?.numero('precipitation_probability'), ' %'),
+          ),
+          ('Precipitación', valor('precipitation', ' mm', decimales: 1)),
+          ('Amanecer', horaGeo(hoy?.texto('sunrise') ?? '')),
+          ('Atardecer', horaGeo(hoy?.texto('sunset') ?? '')),
+        ])
+          FichaCliente(titulo: etiqueta, subtitulo: medida),
+        GraficaGeo(
+          titulo: 'Temperatura por hora',
+          pasos: pronostico.siguientes,
+          campo: 'temperature_2m',
+          unidad: ' °C',
+        ),
+        GraficaGeo(
+          titulo: 'Precipitación por hora',
+          pasos: pronostico.siguientes,
+          campo: 'precipitation',
+          unidad: ' mm',
+        ),
+        Text(
+          'Fuente: Open-Meteo · Consulta: ${datos.consultado.toLocal().toString().substring(0, 16)} (dispositivo)',
+          style: texto.bodySmall,
+        ),
+      ],
     );
   }
 }
+
+double? _kilometros(double? metros) => metros == null ? null : metros / 1000;
+
+IconData _icono(PasoGeo paso) => switch (paso.numero('weather_code')?.toInt()) {
+  0 || 1 =>
+    paso.numero('is_day') == 0
+        ? Icons.nights_stay_outlined
+        : Icons.wb_sunny_outlined,
+  2 || 3 || 45 || 48 => Icons.cloud_outlined,
+  51 ||
+  53 ||
+  55 ||
+  56 ||
+  57 ||
+  61 ||
+  63 ||
+  65 ||
+  66 ||
+  67 ||
+  80 ||
+  81 ||
+  82 => Icons.water_drop_outlined,
+  71 || 73 || 75 || 77 || 85 || 86 => Icons.ac_unit,
+  95 || 96 || 99 => Icons.thunderstorm_outlined,
+  _ => Icons.help_outline,
+};

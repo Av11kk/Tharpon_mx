@@ -43,6 +43,19 @@ bool promocionVigente(FilaCliente fila, DateTime ahora) {
 }
 
 class RepositorioCliente {
+  Future<List<FilaCliente>> puntosPesca() => _paginar(
+    (a, b) => _cliente
+        .from('puntos_pesca')
+        .select(
+          'id,nombre,descripcion,latitud,longitud,imagen_path,publicado,puntos_especies(especies(id,nombre,publicado))',
+        )
+        .eq('publicado', true)
+        .eq('puntos_especies.especies.publicado', true)
+        .order('nombre', ascending: true)
+        .order('id')
+        .range(a, b),
+  );
+
   RepositorioCliente(this._cliente, this.usuarioId);
   final SupabaseClient _cliente;
   final String usuarioId;

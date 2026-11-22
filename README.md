@@ -1,5 +1,7 @@
 # tharpom_mx
 
+La [guía de módulos cliente](docs/modulos_cliente.md) describe las pantallas conectadas a Supabase y las pruebas de integración pendientes con dos cuentas.
+
 El [sistema visual de Flutter](docs/diseno/sistema_visual/README.md) documenta el tema oscuro, las variantes del logotipo, los componentes compartidos y las referencias de Figma.
 
 ## Autenticación de Tharpon MX

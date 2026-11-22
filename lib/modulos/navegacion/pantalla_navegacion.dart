@@ -5,6 +5,7 @@ import '../../compartido/servicios/repositorio_cliente.dart';
 import '../../compartido/servicios/servicio_autenticacion.dart';
 import '../../compartido/widgets/dialogo_cierre_sesion.dart';
 import '../../compartido/widgets/encabezado_navegacion.dart';
+import '../../compartido/widgets/panel_geografico.dart';
 import '../../nucleo/modulo_app.dart';
 import '../clima/pantalla_clima.dart';
 import '../consejos/pantalla_consejos.dart';
@@ -40,6 +41,17 @@ class _PantallaNavegacionState extends State<PantallaNavegacion> {
       widget.cliente == null || widget.perfil == null
       ? null
       : RepositorioCliente(widget.cliente!, widget.perfil!.id);
+  late final _entorno = EntornoGeo();
+  late final _puntos = ValueNotifier<Future<List<FilaCliente>>>(
+    (_repo?.puntosPesca() ?? Future.value(<FilaCliente>[]))..ignore(),
+  );
+
+  @override
+  void dispose() {
+    _entorno.dispose();
+    _puntos.dispose();
+    super.dispose();
+  }
 
   void _seleccionar(ModuloApp modulo, {bool promociones = false}) {
     if (_modulo == modulo && _promociones == promociones) return;
@@ -90,6 +102,8 @@ class _PantallaNavegacionState extends State<PantallaNavegacion> {
       index: _modulo.index,
       children: [
         PantallaInicio(
+          entorno: _entorno,
+          puntos: _puntos,
           onAbrirModulo: _seleccionar,
           onAbrirPromociones: () =>
               _seleccionar(ModuloApp.equipo, promociones: true),
@@ -98,9 +112,15 @@ class _PantallaNavegacionState extends State<PantallaNavegacion> {
           PantallaEspecies(repo: _repo)
         else
           const SizedBox.shrink(),
-        const PantallaClima(),
-        const PantallaMareas(),
-        const PantallaMapa(),
+        PantallaClima(entorno: _entorno),
+        if (_visitados.contains(ModuloApp.mareas))
+          PantallaMareas(entorno: _entorno)
+        else
+          const SizedBox.shrink(),
+        if (_visitados.contains(ModuloApp.mapa))
+          PantallaMapa(entorno: _entorno, puntos: _puntos, repo: _repo)
+        else
+          const SizedBox.shrink(),
         if (_visitados.contains(ModuloApp.equipo))
           PantallaEquipamiento(mostrarPromociones: _promociones, repo: _repo)
         else

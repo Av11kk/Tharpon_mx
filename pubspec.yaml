@@ -80,6 +80,7 @@ flutter:
     - assets/logos/
     - assets/autenticacion/
     - assets/estados/
+    - assets/inicio/
     - assets/fonts/LICENSE.txt
 
   fonts:

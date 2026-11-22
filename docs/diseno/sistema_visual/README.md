@@ -49,3 +49,19 @@ Referencias consultadas en Figma:
 ## Validación
 
 `flutter pub get` resolvió los recursos. `flutter analyze` terminó sin incidencias. `flutter test` pasó 19 pruebas, incluidas las 15 existentes. La cobertura incluye el PNG decodificado, las variantes, el tema, el movimiento reducido, validación dinámica y una ventana de 320 × 560 con teclado simulado. Para revisar Android, ejecuta la app con el comando de la raíz y comprueba el contraste de la barra del sistema, los formularios al girar el dispositivo y la navegación mediante teclado.
+
+## Fase 2 · Bienvenida, Inicio y navegación
+
+La página oficial contiene Inicio, encabezado, menú y diálogo de cierre, y carece de un fotograma independiente de Bienvenida. Flutter muestra el logotipo claro centrado durante la inicialización real y entrega el resultado al mismo `ControlAcceso`. Android usa el fondo `#2A2A2A` antes del primer fotograma. El widget de Bienvenida es el punto de integración para el futuro splash animado.
+
+Inicio usa las tarjetas del diseño para Clima, Mareas, Equipo y Mapa. Clima conserva Open-Meteo y permite actualizar deslizando hacia abajo. Mareas todavía carece de una fuente conectada. Equipo y Promociones conservan el acceso a su sección, cuyo catálogo sigue pendiente. El mapa de Inicio es una **Vista de ejemplo**, con los marcadores de Figma, y Consejos aún usa datos de ejemplo. Las categorías de equipo llevan a Equipo y quedan preparadas para los filtros cuando el catálogo esté disponible.
+
+`EncabezadoNavegacion` concentra menú, identidad y perfil. El panel lateral se abre sobre el módulo actual, conserva una lista desplazable y aplica la selección dentro del mismo `IndexedStack`. Se puede cerrar con su botón, Atrás o el área exterior. El menú y Perfil usan `confirmarCierreSesion` con el servicio ya existente. El flujo de autenticación descarta el navegador privado al cerrar sesión.
+
+Flutter resolvió los recursos, el análisis terminó sin incidencias y las 23 pruebas pasaron. Las pruebas nuevas cubren Bienvenida, navegación y Atrás, cancelación y confirmación del cierre a 320 × 500 y el acceso a Promociones.
+
+Referencias de Figma consultadas mediante MCP
+
+- [Inicio](https://www.figma.com/design/LGkZ9KTPUBlnEzdci29niD?node-id=1-33) y [encabezado](https://www.figma.com/design/LGkZ9KTPUBlnEzdci29niD?node-id=3-3).
+- [Menú lateral](https://www.figma.com/design/LGkZ9KTPUBlnEzdci29niD?node-id=5-94) y [confirmación de cierre](https://www.figma.com/design/LGkZ9KTPUBlnEzdci29niD?node-id=38-136).
+- [Movimiento](https://www.figma.com/design/LGkZ9KTPUBlnEzdci29niD?node-id=50-190). El panel usa el deslizamiento de 280 ms y lo omite con movimiento reducido. La revisión de los estados de carga de Android, el splash, los skeletons y las animaciones del sábalo quedan para la fase de pulido.

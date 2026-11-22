@@ -13,6 +13,7 @@ import 'package:tarpon_mx/nucleo/colores_app.dart';
 
 // Pantalla utilizada para verificar la navegación.
 import 'package:tarpon_mx/modulos/clima/pantalla_clima.dart';
+import 'package:tarpon_mx/modulos/inicio/pantalla_bienvenida.dart';
 
 /// =====================================================
 /// PRUEBAS AUTOMATIZADAS DE TARPON MX
@@ -41,6 +42,103 @@ void main() {
     await tester.pumpAndSettle();
     return servicio;
   }
+
+  testWidgets('Bienvenida espera la inicialización real y respeta el acceso', (
+    tester,
+  ) async {
+    final inicializacion = Completer<ServicioAutenticacion>();
+    final servicio = _AutenticacionPrueba(
+      conSesion: false,
+      rol: RolPerfil.cliente,
+    );
+    addTearDown(servicio.eventos.close);
+    await tester.pumpWidget(TarponMX(inicializacion: inicializacion.future));
+    expect(find.byType(PantallaBienvenida), findsOneWidget);
+    expect(find.byKey(const Key('boton_menu')), findsNothing);
+    inicializacion.complete(servicio);
+    await tester.pumpAndSettle();
+    expect(find.byType(PantallaBienvenida), findsNothing);
+    expect(find.text('Bienvenido de nuevo'), findsOneWidget);
+  });
+
+  testWidgets('Menú permite cerrar, pulsar Atrás y elegir un módulo', (
+    tester,
+  ) async {
+    await abrirApp(tester);
+    final boton = find.byKey(const Key('boton_menu'));
+    final menu = find.byKey(const Key('menu_lateral'));
+    await tester.tap(boton);
+    await tester.pumpAndSettle();
+    expect(menu, findsOneWidget);
+    await tester.tap(find.byKey(const Key('cerrar_menu')));
+    await tester.pumpAndSettle();
+    expect(menu, findsNothing);
+    await tester.tap(boton);
+    await tester.pumpAndSettle();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(menu, findsNothing);
+    await tester.tap(boton);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('opcion_mareas')));
+    await tester.pumpAndSettle();
+    expect(find.text('Información de Mareas'), findsOneWidget);
+    expect(menu, findsNothing);
+  });
+
+  testWidgets('Menú y diálogo de cierre funcionan en una pantalla pequeña', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(320, 500);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    final servicio = await abrirApp(tester);
+    final boton = find.byKey(const Key('boton_menu'));
+    Future<void> abrirCierre() async {
+      await tester.tap(boton);
+      await tester.pumpAndSettle();
+      final salir = find.byKey(const Key('menu_cerrar_sesion'));
+      await tester.ensureVisible(salir);
+      await tester.tap(salir);
+      await tester.pumpAndSettle();
+    }
+
+    await abrirCierre();
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+    expect(servicio.sesion, isNotNull);
+    expect(find.text('¡Buena pesca!'), findsOneWidget);
+    await abrirCierre();
+    await tester.tap(find.widgetWithText(FilledButton, 'Cerrar sesión'));
+    await tester.pumpAndSettle();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('Bienvenido de nuevo'), findsOneWidget);
+    expect(
+      find.byKey(const Key('boton_menu'), skipOffstage: false),
+      findsNothing,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Desde Inicio se abre Promociones sin inventar un catálogo', (
+    tester,
+  ) async {
+    await abrirApp(tester);
+    final scroll = find.descendant(
+      of: find.byType(RefreshIndicator),
+      matching: find.byType(Scrollable),
+    );
+    final promociones = find.byKey(const Key('banner_promociones'));
+    await tester.scrollUntilVisible(promociones, 200, scrollable: scroll);
+    await tester.tap(promociones);
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Las promociones aún no están disponibles en la app.'),
+      findsOneWidget,
+    );
+  });
 
   testWidgets('Sin sesión abre el acceso y permite registrarse', (
     tester,

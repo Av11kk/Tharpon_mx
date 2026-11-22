@@ -1,34 +1,19 @@
 import 'package:flutter/material.dart';
 
 import '../../compartido/servicios/servicio_autenticacion.dart';
-// Colores e identificadores de los módulos.
-import '../../nucleo/colores_app.dart';
-import '../../nucleo/medidas_app.dart';
+import '../../compartido/widgets/dialogo_cierre_sesion.dart';
+import '../../compartido/widgets/encabezado_navegacion.dart';
 import '../../nucleo/modulo_app.dart';
-
-// Pantallas de la aplicación.
-import '../inicio/pantalla_inicio.dart';
-import '../especies/pantalla_especies.dart';
 import '../clima/pantalla_clima.dart';
-import '../mareas/pantalla_mareas.dart';
-import '../mapa/pantalla_mapa.dart';
-import '../equipamiento/pantalla_equipamiento.dart';
 import '../consejos/pantalla_consejos.dart';
+import '../equipamiento/pantalla_equipamiento.dart';
+import '../especies/pantalla_especies.dart';
+import '../inicio/pantalla_inicio.dart';
+import '../mapa/pantalla_mapa.dart';
+import '../mareas/pantalla_mareas.dart';
 import '../perfil/pantalla_perfil.dart';
+import 'menu_navegacion.dart';
 
-/// =====================================================
-/// NAVEGACIÓN PRINCIPAL DE TARPON MX
-/// =====================================================
-///
-/// Esta pantalla controla:
-/// - El encabezado global.
-/// - El menú desplegable superior izquierdo.
-/// - El acceso al Perfil.
-/// - El módulo seleccionado.
-/// - La navegación desde los banners del Inicio.
-///
-/// Todas las secciones principales comparten
-/// la misma barra superior.
 class PantallaNavegacion extends StatefulWidget {
   const PantallaNavegacion({super.key, this.perfil, this.cerrarSesion});
 
@@ -40,55 +25,21 @@ class PantallaNavegacion extends StatefulWidget {
 }
 
 class _PantallaNavegacionState extends State<PantallaNavegacion> {
-  /// Módulo que se muestra actualmente.
-  ModuloApp moduloActual = ModuloApp.inicio;
+  ModuloApp _modulo = ModuloApp.inicio;
+  bool _promociones = false;
 
-  /// Nombres de las secciones principales.
-  ///
-  /// El orden debe coincidir con ModuloApp.
-  static const List<String> nombres = [
-    'Inicio',
-    'Especies',
-    'Clima',
-    'Mareas',
-    'Mapa',
-    'Equipo',
-    'Consejos',
-  ];
-
-  /// Iconos de cada módulo.
-  static const List<IconData> iconos = [
-    Icons.home_outlined,
-    Icons.phishing,
-    Icons.cloud_outlined,
-    Icons.waves,
-    Icons.map_outlined,
-    Icons.shopping_bag_outlined,
-    Icons.menu_book_outlined,
-  ];
-
-  /// Cambia el módulo visible.
-  ///
-  /// Esta función es utilizada por el menú
-  /// desplegable y los banners del Inicio.
-  void cambiarModulo(ModuloApp nuevoModulo) {
-    if (nuevoModulo == moduloActual) {
-      return;
-    }
-
+  void _seleccionar(ModuloApp modulo, {bool promociones = false}) {
+    if (_modulo == modulo && _promociones == promociones) return;
     setState(() {
-      moduloActual = nuevoModulo;
+      _modulo = modulo;
+      _promociones = promociones;
     });
   }
 
-  /// Abre el Perfil como una nueva pantalla.
-  ///
-  /// Cuando el usuario regrese, continuará
-  /// en el módulo que estaba consultando.
-  void abrirPerfil() {
+  void _abrirPerfil() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) => PantallaPerfil(
+        builder: (_) => PantallaPerfil(
           perfil: widget.perfil,
           cerrarSesion: widget.cerrarSesion,
         ),
@@ -96,138 +47,45 @@ class _PantallaNavegacionState extends State<PantallaNavegacion> {
     );
   }
 
-  /// Construye las opciones del menú desplegable.
-  ///
-  /// PopupMenuItem representa una opción
-  /// que el usuario puede seleccionar.
-  List<PopupMenuEntry<ModuloApp>> construirOpciones() {
-    return [
-      for (int i = 0; i < ModuloApp.values.length; i++)
-        PopupMenuItem<ModuloApp>(
-          key: Key('opcion_${ModuloApp.values[i].name}'),
-
-          // Identificador del módulo.
-          value: ModuloApp.values[i],
-
-          padding: const EdgeInsets.symmetric(horizontal: MedidasApp.pequeno),
-          child: Container(
-            padding: const EdgeInsets.all(MedidasApp.pequeno),
-            decoration: BoxDecoration(
-              color: moduloActual == ModuloApp.values[i]
-                  ? ColoresApp.seleccionado
-                  : ColoresApp.opcionMenu,
-              borderRadius: BorderRadius.circular(MedidasApp.radioSecundario),
-            ),
-            child: Row(
-              children: [
-                Icon(iconos[i], color: ColoresApp.textoPrincipal),
-
-                const SizedBox(width: 12),
-
-                Expanded(child: Text(nombres[i])),
-
-                // Indica la opción seleccionada.
-                if (moduloActual == ModuloApp.values[i])
-                  const Icon(Icons.check, color: ColoresApp.etiqueta, size: 18),
-              ],
-            ),
-          ),
-        ),
-    ];
-  }
-
-  /// Construye el botón superior izquierdo.
-  Widget construirMenu() {
-    return PopupMenuButton<ModuloApp>(
-      key: const Key('boton_menu'),
-
-      tooltip: 'Abrir menú',
-
-      // Abre el módulo seleccionado.
-      onSelected: cambiarModulo,
-
-      // Opciones que aparecerán al presionar.
-      itemBuilder: (context) => construirOpciones(),
-
-      popUpAnimationStyle: AnimationStyle(
-        duration: MovimientoApp.duracion(context, MovimientoApp.menu),
-        curve: MovimientoApp.salida,
-        reverseCurve: MovimientoApp.entrada,
-      ),
-
-      // Icono de tres líneas.
-      icon: const Icon(Icons.menu),
+  Future<void> _abrirMenu() async {
+    final cerrarSesion = widget.cerrarSesion;
+    final opcion = await abrirMenuNavegacion(
+      context,
+      actual: _modulo,
+      permiteCerrarSesion: cerrarSesion != null,
     );
+    if (!mounted) return;
+    switch (opcion) {
+      case final ModuloApp modulo:
+        _seleccionar(modulo);
+      case AccionMenu.perfil:
+        _abrirPerfil();
+      case AccionMenu.cerrarSesion when cerrarSesion != null:
+        await confirmarCierreSesion(context, cerrarSesion);
+    }
   }
 
-  /// Construye la barra superior compartida.
-  PreferredSizeWidget construirBarraSuperior() {
-    return AppBar(
-      // Botón desplegable superior izquierdo.
-      leading: construirMenu(),
-
-      // Nombre comercial de la aplicación.
-      title: const Text('TARPON MX'),
-
-      // Centra el nombre de la aplicación.
-      centerTitle: true,
-
-      // Botones de la esquina derecha.
-      actions: [
-        IconButton(
-          key: const Key('boton_perfil'),
-
-          tooltip: 'Abrir perfil',
-
-          onPressed: abrirPerfil,
-
-          icon: const Icon(Icons.account_circle_outlined, size: 28),
-        ),
-
-        const SizedBox(width: 8),
-      ],
-    );
-  }
-
-  /// Construye las siete pantallas principales.
-  ///
-  /// IndexedStack conserva las pantallas
-  /// montadas cuando cambiamos de sección.
-  ///
-  /// IMPORTANTE:
-  /// Las pantallas internas ya no deben
-  /// construir su propia AppBar.
-  Widget construirContenido() {
-    return IndexedStack(
-      index: moduloActual.index,
-
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: EncabezadoNavegacion(
+      abrirMenu: _abrirMenu,
+      abrirPerfil: _abrirPerfil,
+    ),
+    body: IndexedStack(
+      index: _modulo.index,
       children: [
-        PantallaInicio(onAbrirModulo: cambiarModulo),
-
+        PantallaInicio(
+          onAbrirModulo: _seleccionar,
+          onAbrirPromociones: () =>
+              _seleccionar(ModuloApp.equipo, promociones: true),
+        ),
         const PantallaEspecies(),
-
         const PantallaClima(),
-
         const PantallaMareas(),
-
         const PantallaMapa(),
-
-        const PantallaEquipamiento(),
-
+        PantallaEquipamiento(mostrarPromociones: _promociones),
         const PantallaConsejos(),
       ],
-    );
-  }
-
-  /// Construcción principal de la navegación.
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      // Única barra superior principal.
-      appBar: construirBarraSuperior(),
-
-      // Contenido del módulo seleccionado.
-      body: construirContenido(),
-    );
-  }
+    ),
+  );
 }

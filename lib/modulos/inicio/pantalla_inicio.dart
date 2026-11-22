@@ -26,7 +26,9 @@ class _PantallaInicioState extends State<PantallaInicio> {
 
   Future<void> _actualizar() async {
     final consulta = ServicioClima.instancia.actualizarClima();
-    setState(() => _clima = consulta);
+    setState(() {
+      _clima = consulta;
+    });
     try {
       await consulta;
     } catch (_) {

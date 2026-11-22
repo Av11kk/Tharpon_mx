@@ -25,7 +25,12 @@ void main() {
     return;
   }
 
-  runApp(TarponMX(inicializacion: _inicializar(url, clave, uri, retornoWeb)));
+  runApp(
+    TarponMX(
+      inicializacion: _inicializar(url, clave, uri, retornoWeb),
+      conectarDatos: true,
+    ),
+  );
 }
 
 Future<ServicioAutenticacion> _inicializar(
@@ -89,11 +94,13 @@ class TarponMX extends StatelessWidget {
     this.servicio,
     this.errorInicio,
     this.inicializacion,
+    this.conectarDatos = false,
   });
 
   final ServicioAutenticacion? servicio;
   final String? errorInicio;
   final Future<ServicioAutenticacion>? inicializacion;
+  final bool conectarDatos;
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +118,10 @@ class TarponMX extends StatelessWidget {
                   );
                 }
                 if (resultado.data case final servicio?) {
-                  return ControlAcceso(servicio: servicio);
+                  return ControlAcceso(
+                    servicio: servicio,
+                    cliente: conectarDatos ? Supabase.instance.client : null,
+                  );
                 }
                 return const PantallaBienvenida();
               },

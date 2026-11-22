@@ -9,9 +9,10 @@ import '../navegacion/pantalla_navegacion.dart';
 import 'pantalla_login.dart';
 
 class ControlAcceso extends StatefulWidget {
-  const ControlAcceso({super.key, required this.servicio});
+  const ControlAcceso({super.key, required this.servicio, this.cliente});
 
   final ServicioAutenticacion servicio;
+  final SupabaseClient? cliente;
 
   @override
   State<ControlAcceso> createState() => _ControlAccesoState();
@@ -208,6 +209,7 @@ class _ControlAccesoState extends State<ControlAcceso>
               onGenerateRoute: (_) => MaterialPageRoute<void>(
                 builder: (_) => PantallaNavegacion(
                   perfil: perfil,
+                  cliente: widget.cliente,
                   cerrarSesion: widget.servicio.cerrarSesion,
                 ),
               ),

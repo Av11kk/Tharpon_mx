@@ -1,44 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../compartido/datos/consejos_mock.dart';
-import 'pantalla_detalle_consejo.dart';
+import '../../compartido/servicios/repositorio_cliente.dart';
+import '../../compartido/widgets/catalogo_cliente.dart';
 
 class PantallaConsejos extends StatelessWidget {
-  const PantallaConsejos({super.key});
-
+  const PantallaConsejos({super.key, this.repo});
+  final RepositorioCliente? repo;
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Consejos')),
-
-      body: ListView.builder(
-        itemCount: consejosMock.length,
-
-        itemBuilder: (context, index) {
-          final consejo = consejosMock[index];
-
-          return Card(
-            child: ListTile(
-              leading: const Icon(Icons.menu_book),
-
-              title: Text(consejo.titulo),
-
-              subtitle: Text(consejo.descripcion),
-
-              onTap: () {
-                Navigator.push(
-                  context,
-
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        PantallaDetalleConsejo(consejo: consejo),
-                  ),
-                );
-              },
-            ),
-          );
-        },
-      ),
-    );
-  }
+  Widget build(BuildContext context) => repo == null
+      ? const Center(child: Text('Consejos'))
+      : CatalogoCliente(repo: repo!, tipo: TipoCatalogo.consejos);
 }

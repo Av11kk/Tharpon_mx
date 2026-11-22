@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 ///
 /// Podemos utilizarlo en diferentes pantallas
 /// sin tener que repetir el código.
-class LogoTarpon extends StatelessWidget {
+class LogoTharpon extends StatelessWidget {
   /// Ancho del logotipo.
   final double ancho;
 
@@ -16,7 +16,7 @@ class LogoTarpon extends StatelessWidget {
   ///
   /// Si no indicamos las dimensiones,
   /// se utilizan los valores predeterminados.
-  const LogoTarpon({super.key, this.ancho = 220, this.alto = 160});
+  const LogoTharpon({super.key, this.ancho = 220, this.alto = 160});
 
   /// Construye la interfaz del logotipo.
   @override
@@ -24,6 +24,7 @@ class LogoTarpon extends StatelessWidget {
     return Image.asset(
       // Ubicación del archivo PNG.
       'assets/logos/logo_tarpon.png',
+      semanticLabel: 'Tharpon MX',
 
       // Dimensiones configurables.
       width: ancho,
@@ -43,4 +44,8 @@ class LogoTarpon extends StatelessWidget {
       },
     );
   }
+}
+
+class LogoTarpon extends LogoTharpon {
+  const LogoTarpon({super.key, super.ancho, super.alto});
 }

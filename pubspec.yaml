@@ -42,6 +42,8 @@ dependencies:
   # Proporciona iconos de estilo Cupertino.
   cupertino_icons: ^1.0.8
   http: ^1.6.0
+  supabase_flutter: ^2.18.3
+  flutter_svg: ^2.5.0
 
 # =====================================================
 # DEPENDENCIAS PARA DESARROLLO
@@ -76,6 +78,7 @@ flutter:
   # se encuentren dentro de este directorio.
   assets:
     - assets/logos/
+    - assets/autenticacion/
 
   # En el futuro podremos agregar otras carpetas
   # cuando tengan archivos que necesitemos usar.

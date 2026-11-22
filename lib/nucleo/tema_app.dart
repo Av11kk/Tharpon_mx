@@ -1,177 +1,135 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-// Importamos los colores oficiales de Tarpon MX.
 import 'colores_app.dart';
+import 'medidas_app.dart';
 
-/// =====================================================
-/// TEMA GLOBAL DE TARPON MX
-/// =====================================================
-///
-/// Esta clase configura la apariencia general
-/// de nuestra aplicación.
-///
-/// Aquí definimos:
-///
-/// 1. Los colores principales.
-/// 2. El fondo de las pantallas.
-/// 3. Las barras superiores.
-/// 4. Las tarjetas.
-/// 5. Los botones.
-/// 6. El menú de navegación inferior.
-/// 7. Los estilos de texto.
-///
-/// VENTAJA:
-/// Al centralizar los estilos, podemos modificar
-/// la apariencia de varias pantallas desde un
-/// único archivo.
-/// =====================================================
+abstract final class TemaApp {
+  static const barraSistema = SystemUiOverlayStyle.light;
+  static const familia = 'Inter';
 
-class TemaApp {
-  /// Tema claro utilizado por la aplicación.
-  ///
-  /// Se accede mediante:
-  ///
-  /// TemaApp.temaClaro
-  static final ThemeData temaClaro = ThemeData(
-    // =================================================
-    // CONFIGURACIÓN DE MATERIAL DESIGN
-    // =================================================
-
-    // Activa Material Design 3.
-    useMaterial3: true,
-
-    // =================================================
-    // COLORES GENERALES
-    // =================================================
-
-    // Genera un esquema de colores a partir
-    // del azul marino oficial de Tarpon MX.
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: ColoresApp.azulMarino,
-      brightness: Brightness.light,
+  static const tipografia = TextTheme(
+    headlineMedium: TextStyle(fontSize: 30, fontWeight: FontWeight.w700),
+    headlineSmall: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+    titleLarge: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+    titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+    titleSmall: TextStyle(
+      fontFamily: familia,
+      fontSize: 13,
+      fontWeight: FontWeight.w700,
     ),
+    bodyMedium: TextStyle(fontSize: 14),
+    bodySmall: TextStyle(fontSize: 13, color: ColoresApp.textoSecundario),
+    labelMedium: TextStyle(fontSize: 12, color: ColoresApp.etiqueta),
+  );
 
-    // Define el fondo general de las pantallas.
-    scaffoldBackgroundColor: ColoresApp.grisClaro,
-
-    // =================================================
-    // BARRA SUPERIOR DE LA APLICACIÓN
-    // =================================================
-    appBarTheme: const AppBarTheme(
-      // Color de fondo de la barra.
-      backgroundColor: ColoresApp.azulMarino,
-
-      // Color de los iconos y botones.
-      foregroundColor: ColoresApp.blanco,
-
-      // Centra el título de la barra.
+  static final oscuro = ThemeData(
+    fontFamily: familia,
+    brightness: Brightness.dark,
+    colorScheme: const ColorScheme.dark(
+      primary: ColoresApp.accion,
+      onPrimary: ColoresApp.tarjeta,
+      secondary: ColoresApp.etiqueta,
+      onSecondary: ColoresApp.tarjeta,
+      surface: ColoresApp.fondo,
+      onSurface: ColoresApp.textoPrincipal,
+      onSurfaceVariant: ColoresApp.textoSecundario,
+      surfaceContainer: ColoresApp.superficie,
+      surfaceContainerHigh: ColoresApp.seleccionado,
+      outline: ColoresApp.bordeAcceso,
+      outlineVariant: ColoresApp.borde,
+      error: ColoresApp.error,
+      onError: ColoresApp.tarjeta,
+    ),
+    scaffoldBackgroundColor: ColoresApp.fondo,
+    textTheme: tipografia,
+    iconTheme: const IconThemeData(
+      color: ColoresApp.etiqueta,
+      size: MedidasApp.icono,
+    ),
+    appBarTheme: const AppBarThemeData(
+      backgroundColor: ColoresApp.tarjeta,
+      foregroundColor: ColoresApp.textoPrincipal,
+      surfaceTintColor: Colors.transparent,
       centerTitle: true,
-
-      // Elimina la sombra.
       elevation: 0,
-
-      // Define el estilo del título.
-      titleTextStyle: TextStyle(
-        color: ColoresApp.blanco,
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
+      systemOverlayStyle: barraSistema,
+    ),
+    cardTheme: const CardThemeData(
+      color: ColoresApp.tarjeta,
+      elevation: MedidasApp.elevacionTarjeta,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(MedidasApp.radioTarjeta),
+        ),
       ),
     ),
-
-    // =================================================
-    // TARJETAS
-    // =================================================
-    cardTheme: CardThemeData(
-      // Color de fondo de las tarjetas.
-      color: ColoresApp.blanco,
-
-      // Proporciona una sombra suave.
-      elevation: 3,
-
-      // Define las esquinas redondeadas.
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-    ),
-
-    // =================================================
-    // BOTONES ELEVADOS
-    // =================================================
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      // Define el estilo predeterminado
-      // de los botones ElevatedButton.
-      style: ElevatedButton.styleFrom(
-        // Fondo del botón.
-        backgroundColor: ColoresApp.azulMarino,
-
-        // Color del texto e iconos.
-        foregroundColor: ColoresApp.blanco,
-
-        // Espaciado interior del botón.
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-
-        // Esquinas redondeadas.
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    popupMenuTheme: const PopupMenuThemeData(
+      color: ColoresApp.panelNavegacion,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(MedidasApp.radioDialogo),
+        ),
       ),
     ),
-
-    // =================================================
-    // MENÚ DE NAVEGACIÓN INFERIOR
-    // =================================================
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      // Color de fondo del menú.
-      backgroundColor: ColoresApp.blanco,
-
-      // Color del icono seleccionado.
-      selectedItemColor: ColoresApp.azulMarino,
-
-      // Color de los iconos no seleccionados.
-      unselectedItemColor: ColoresApp.textoSecundario,
-
-      // Estilo del texto seleccionado.
-      selectedLabelStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-
-      // Estilo de los textos no seleccionados.
-      unselectedLabelStyle: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.normal,
+    dialogTheme: const DialogThemeData(
+      backgroundColor: ColoresApp.tarjeta,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(MedidasApp.radioDialogo),
+        ),
       ),
-
-      // Muestra el texto de la opción seleccionada.
-      showSelectedLabels: true,
-
-      // Muestra el texto de las demás opciones.
-      showUnselectedLabels: true,
-
-      // Mantiene visibles todas las opciones.
-      // Es útil porque tenemos cinco módulos.
-      type: BottomNavigationBarType.fixed,
-
-      // Elimina la elevación.
-      elevation: 0,
     ),
-
-    // =================================================
-    // ESTILOS GENERALES DE TEXTO
-    // =================================================
-    textTheme: const TextTheme(
-      // Títulos principales.
-      headlineMedium: TextStyle(
-        fontSize: 26,
-        fontWeight: FontWeight.bold,
-        color: ColoresApp.textoPrincipal,
+    snackBarTheme: const SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: ColoresApp.panelNavegacion,
+      contentTextStyle: TextStyle(color: ColoresApp.textoPrincipal),
+    ),
+    inputDecorationTheme: InputDecorationThemeData(
+      filled: true,
+      fillColor: ColoresApp.superficie,
+      hintStyle: tipografia.bodySmall,
+      labelStyle: tipografia.bodySmall,
+      errorStyle: const TextStyle(color: ColoresApp.error),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: MedidasApp.medio,
+        vertical: MedidasApp.normal,
       ),
-
-      // Títulos secundarios.
-      titleLarge: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-        color: ColoresApp.textoPrincipal,
+      border: const OutlineInputBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(MedidasApp.radioControl),
+        ),
       ),
-
-      // Texto normal.
-      bodyMedium: TextStyle(fontSize: 14, color: ColoresApp.textoPrincipal),
-
-      // Texto pequeño o descriptivo.
-      bodySmall: TextStyle(fontSize: 12, color: ColoresApp.textoSecundario),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        disabledBackgroundColor: ColoresApp.borde,
+        disabledForegroundColor: ColoresApp.textoSecundario,
+        minimumSize: const Size(0, MedidasApp.altoAccionPrincipal),
+        animationDuration: MovimientoApp.pulsacion,
+        textStyle: tipografia.titleSmall,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+            Radius.circular(MedidasApp.radioControl),
+          ),
+        ),
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: ColoresApp.textoPrincipal,
+        minimumSize: const Size(0, MedidasApp.altoControl),
+        animationDuration: MovimientoApp.pulsacion,
+        textStyle: tipografia.titleSmall,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+            Radius.circular(MedidasApp.radioSecundario),
+          ),
+        ),
+      ),
     ),
   );
 }

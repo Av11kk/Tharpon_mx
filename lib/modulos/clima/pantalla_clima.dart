@@ -62,7 +62,7 @@ class _PantallaClimaState extends State<PantallaClima> {
         padding: const EdgeInsets.all(18),
         child: Row(
           children: [
-            Icon(icono, color: ColoresApp.azulOceano, size: 30),
+            Icon(icono, color: ColoresApp.etiqueta, size: 30),
 
             const SizedBox(width: 16),
 

@@ -1,31 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../nucleo/colores_app.dart';
+import '../../nucleo/medidas_app.dart';
+import 'controles_app.dart';
 
-/// =====================================================
-/// TARJETA DASHBOARD
-/// =====================================================
-///
-/// Widget reutilizable para mostrar información
-/// en la pantalla principal.
-///
-/// Se reutiliza para:
-/// - Clima
-/// - Mareas
-/// - Consejos
-/// - Promociones
-/// - Capturas
-///
 class TarjetaDashboard extends StatelessWidget {
-  /// Icono principal
-  final IconData icono;
-
-  /// Título de la tarjeta
-  final String titulo;
-
-  /// Descripción
-  final String descripcion;
-
   const TarjetaDashboard({
     super.key,
     required this.icono,
@@ -33,62 +12,37 @@ class TarjetaDashboard extends StatelessWidget {
     required this.descripcion,
   });
 
+  final IconData icono;
+  final String titulo, descripcion;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 15),
-
-      decoration: BoxDecoration(
-        color: ColoresApp.blanco,
-
-        borderRadius: BorderRadius.circular(20),
-
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue.withValues(alpha: 0.5),
-            blurRadius: 12,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-
+    final texto = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: MedidasApp.normal),
+      child: TarjetaApp(
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(15),
-
-              decoration: BoxDecoration(
-                color: ColoresApp.azulMarino,
-                borderRadius: BorderRadius.circular(15),
+            DecoratedBox(
+              decoration: const BoxDecoration(
+                color: ColoresApp.superficie,
+                borderRadius: BorderRadius.all(
+                  Radius.circular(MedidasApp.radioControl),
+                ),
               ),
-
-              child: Icon(icono, size: 30, color: Colors.blue.shade800),
+              child: Padding(
+                padding: const EdgeInsets.all(MedidasApp.medio),
+                child: Icon(icono),
+              ),
             ),
-
-            const SizedBox(width: 15),
-
+            const SizedBox(width: MedidasApp.normal),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-
                 children: [
-                  Text(
-                    titulo.toUpperCase(),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 5),
-
-                  Text(
-                    descripcion,
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
-                  ),
+                  Text(titulo.toUpperCase(), style: texto.titleMedium),
+                  const SizedBox(height: MedidasApp.pequeno),
+                  Text(descripcion, style: texto.bodySmall),
                 ],
               ),
             ),

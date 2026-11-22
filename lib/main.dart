@@ -97,7 +97,7 @@ class TarponMX extends StatelessWidget {
     final autenticacion = servicio;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: TemaApp.temaClaro,
+      theme: TemaApp.oscuro,
       home: autenticacion == null
           ? PantallaEstadoAcceso(
               mensaje: errorInicio ?? 'Configura SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY para continuar.',

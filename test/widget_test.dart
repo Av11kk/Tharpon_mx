@@ -7,7 +7,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 // Aplicación principal de Tarpon MX.
 import 'package:tarpon_mx/compartido/servicios/servicio_autenticacion.dart';
 import 'package:tarpon_mx/compartido/widgets/logo_tarpon.dart';
+import 'package:tarpon_mx/compartido/widgets/estado_operacion.dart';
 import 'package:tarpon_mx/main.dart';
+import 'package:tarpon_mx/nucleo/colores_app.dart';
 
 // Pantalla utilizada para verificar la navegación.
 import 'package:tarpon_mx/modulos/clima/pantalla_clima.dart';
@@ -66,20 +68,38 @@ void main() {
       await tester.enterText(campos.at(indice), valor);
     }
     final crear = find.widgetWithText(FilledButton, 'Crear cuenta');
-    await tester.ensureVisible(crear);
-    await tester.tap(crear);
     await tester.pumpAndSettle();
-    expect(find.text('Cumple todos los requisitos.'), findsOneWidget);
+    expect(tester.widget<FilledButton>(crear).onPressed, isNull);
+    expect(
+      tester
+          .widgetList<IndicadorRequisito>(find.byType(IndicadorRequisito))
+          .any((regla) => !regla.cumplido),
+      isTrue,
+    );
     expect(servicio.registros, 0);
 
     await tester.enterText(campos.at(2), 'Clave123!');
-    await tester.ensureVisible(crear);
-    await tester.tap(crear);
-    await tester.pumpAndSettle();
-    expect(find.text('Las contraseñas deben coincidir.'), findsOneWidget);
+    await tester.pump();
+    final requisitos = tester.widgetList<IndicadorRequisito>(
+      find.byType(IndicadorRequisito),
+    );
+    expect(requisitos.where((regla) => regla.cumplido), hasLength(5));
+    expect(
+      requisitos.singleWhere((regla) => regla.error).texto,
+      'Las contraseñas coinciden',
+    );
+    expect(tester.widget<FilledButton>(crear).onPressed, isNull);
     expect(servicio.registros, 0);
 
     await tester.enterText(campos.at(3), 'Clave123!');
+    await tester.pump();
+    expect(
+      tester
+          .widgetList<IndicadorRequisito>(find.byType(IndicadorRequisito))
+          .every((regla) => regla.cumplido),
+      isTrue,
+    );
+    expect(tester.widget<FilledButton>(crear).onPressed, isNotNull);
     await tester.ensureVisible(crear);
     await tester.tap(crear);
     await tester.pumpAndSettle();
@@ -104,8 +124,40 @@ void main() {
       find.descendant(of: imagen, matching: find.byType(RawImage)),
     );
     expect(render.image, isNotNull);
-    expect(tester.getSize(imagen), const Size(148, 132));
+    expect(tester.getSize(imagen), const Size(200, 124));
+    expect(widget.color, ColoresApp.textoPrincipal);
+    expect(widget.colorBlendMode, BlendMode.srcIn);
+    expect(find.text('THARPON / MX'), findsNothing);
   });
+
+  testWidgets(
+    'Acceso y registro se desplazan con teclado en ventana compacta',
+    (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(320, 560);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetViewInsets);
+      await abrirApp(tester, conSesion: false);
+
+      final enlace = find.text('¿No tienes cuenta? Regístrate');
+      await tester.ensureVisible(enlace);
+      await tester.tap(enlace);
+      await tester.pumpAndSettle();
+      final clave = find.byType(TextFormField).at(2);
+      await tester.ensureVisible(clave);
+      await tester.tap(clave);
+      tester.view.viewInsets = const FakeViewPadding(bottom: 270);
+      await tester.enterText(clave, 'Clave123!');
+      await tester.pumpAndSettle();
+      final confirmar = find.byType(TextFormField).at(3);
+      await tester.ensureVisible(confirmar);
+      await tester.pumpAndSettle();
+      expect(confirmar.hitTestable(), findsOneWidget);
+      expect(find.byType(SingleChildScrollView), findsWidgets);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('Solicita y completa la recuperación desde un enlace', (
     tester,

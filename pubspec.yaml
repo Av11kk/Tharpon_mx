@@ -79,6 +79,15 @@ flutter:
   assets:
     - assets/logos/
     - assets/autenticacion/
+    - assets/estados/
+    - assets/fonts/LICENSE.txt
+
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
 
   # En el futuro podremos agregar otras carpetas
   # cuando tengan archivos que necesitemos usar.

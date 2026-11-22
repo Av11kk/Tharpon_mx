@@ -1,75 +1,21 @@
 import 'package:flutter/material.dart';
 
-/// =====================================================
-/// COLORES CORPORATIVOS DE TARPON MX
-/// =====================================================
-///
-/// Esta clase almacena los colores principales
-/// utilizados en toda nuestra aplicación.
-///
-/// OBJETIVO:
-/// Mantener una identidad visual consistente.
-///
-/// VENTAJA:
-/// Si necesitamos modificar un color, solamente
-/// tendremos que cambiarlo en este archivo.
-///
-/// Por ejemplo:
-///
-/// ColoresApp.azulMarino
-///
-/// Nos devuelve el color azul principal.
-///
-/// =====================================================
-
-class ColoresApp {
-  // ===================================================
-  // COLORES PRINCIPALES
-  // ===================================================
-
-  /// Azul marino.
-  ///
-  /// Se utiliza principalmente en encabezados,
-  /// botones importantes y elementos destacados.
-  static const Color azulMarino = Color(0xFF0D3B66);
-
-  /// Azul océano.
-  ///
-  /// Es nuestro color secundario.
-  static const Color azulOceano = Color(0xFF1D70A2);
-
-  /// Turquesa.
-  ///
-  /// Se utiliza para acentos visuales,
-  /// indicadores y elementos seleccionados.
-  static const Color turquesa = Color(0xFF00B4D8);
-
-  // ===================================================
-  // COLORES DE FONDO
-  // ===================================================
-
-  /// Color arena.
-  ///
-  /// Puede utilizarse en secciones especiales.
-  static const Color arena = Color(0xFFF4EBD0);
-
-  /// Color blanco.
-  ///
-  /// Se utiliza en tarjetas y superficies.
-  static const Color blanco = Colors.white;
-
-  /// Gris claro.
-  ///
-  /// Se utiliza como fondo general.
-  static const Color grisClaro = Color(0xFFF4F4F4);
-
-  // ===================================================
-  // COLORES PARA TEXTOS
-  // ===================================================
-
-  /// Color oscuro para textos principales.
-  static const Color textoPrincipal = Color(0xFF1F2937);
-
-  /// Color gris para textos secundarios.
-  static const Color textoSecundario = Color(0xFF616B75);
+abstract final class ColoresApp {
+  static const fondo = Color(0xff2a2a2a);
+  static const tarjeta = Color(0xff191919);
+  static const superficie = Color(0xff262626);
+  static const seleccionado = Color(0xff3a3a3a);
+  static const textoPrincipal = Color(0xfff5f5f5);
+  static const textoSecundario = Color(0xffbebebe);
+  static const etiqueta = Color(0xffc3c3c3);
+  static const panelNavegacion = Color(0xff1e1e1e);
+  static const opcionMenu = Color(0xff242424);
+  static const accionSecundaria = Color(0xff303030);
+  static const accion = Color(0xffe0e0e0);
+  static const campoAcceso = Color(0xff202020);
+  static const borde = Color(0xff454545);
+  static const bordeAcceso = Color(0xff808080);
+  static const bordeTarjetaAcceso = Color(0xffa0a0a0);
+  static const exito = Color(0xff67d49b);
+  static const error = Color(0xffef8585);
 }

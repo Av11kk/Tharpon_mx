@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' show ClientException;
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -7,11 +8,10 @@ import '../../compartido/servicios/servicio_autenticacion.dart';
 import '../../compartido/widgets/estado_operacion.dart';
 import '../../compartido/widgets/logo_tarpon.dart';
 
-const _fondo = Color(0xff2a2a2a);
-const _panel = Color(0xff191919);
-const _texto = Color(0xfff5f5f5);
-const _secundario = Color(0xffbebebe);
-const _accion = Color(0xffe0e0e0);
+import '../../compartido/widgets/controles_app.dart';
+import '../../nucleo/colores_app.dart';
+import '../../nucleo/medidas_app.dart';
+import '../../nucleo/tema_app.dart';
 
 TipoEstadoOperacion tipoErrorAcceso(Object error) =>
     error is AuthRetryableFetchException || error is ClientException
@@ -83,10 +83,25 @@ class _PantallaLoginState extends State<PantallaLogin> {
     ('Al menos un número', RegExp(r'[0-9]').hasMatch),
     ('Un carácter especial', RegExp(r'[^\w\sÁÉÍÓÚÜÑáéíóúüñ]').hasMatch),
   ];
+  static final _formatoCorreo = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+  late final _camposRegistro = Listenable.merge([
+    _nombre,
+    _correo,
+    _contrasena,
+    _confirmacion,
+  ]);
 
   bool get _claveNueva => _modo == _Modo.registro || _modo == _Modo.restablecer;
   bool _claveValida(String clave) =>
       _requisitos.every((regla) => regla.$2(clave));
+  bool get _registroValido {
+    final nombre = _nombre.text.trim();
+    return nombre.isNotEmpty &&
+        nombre.runes.length <= 120 &&
+        _formatoCorreo.hasMatch(_correo.text.trim()) &&
+        _claveValida(_contrasena.text) &&
+        _contrasena.text == _confirmacion.text;
+  }
 
   @override
   void dispose() {
@@ -173,92 +188,39 @@ class _PantallaLoginState extends State<PantallaLogin> {
     String? recurso,
     bool clave = false,
     bool etiquetaInterna = false,
-    Color relleno = const Color(0xff202020),
-  }) {
-    final borde = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(
-        color: _modo == _Modo.registro
-            ? const Color(0xff454545)
-            : const Color(0xff737373),
-      ),
-    );
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (!etiquetaInterna) ...[
-          Text(
-            etiqueta,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 7),
-        ],
-        TextFormField(
-          controller: controller,
-          enabled: !_ocupado,
-          obscureText: clave && !_visible,
-          autofillHints: [autofill],
-          keyboardType: autofill == AutofillHints.email
-              ? TextInputType.emailAddress
-              : null,
-          autocorrect: !clave && autofill == AutofillHints.name,
-          enableSuggestions: !clave,
-          style: const TextStyle(color: _texto, fontSize: 14),
-          validator: validar,
-          decoration: InputDecoration(
-            labelText: etiquetaInterna ? etiqueta : null,
-            floatingLabelBehavior: _modo == _Modo.recuperar
-                ? FloatingLabelBehavior.always
-                : FloatingLabelBehavior.auto,
-            hintText: pista,
-            labelStyle: const TextStyle(color: _secundario),
-            hintStyle: const TextStyle(color: _secundario, fontSize: 13),
-            errorStyle: const TextStyle(color: _texto),
-            filled: true,
-            fillColor: relleno,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 16,
+    required Color relleno,
+  }) => CampoApp(
+    controlador: controller,
+    etiqueta: etiqueta,
+    pista: pista,
+    validar: validar,
+    autocompletar: autofill,
+    habilitado: !_ocupado,
+    oculto: clave && !_visible,
+    alCambiarVisibilidad: clave
+        ? () => setState(() => _visible = !_visible)
+        : null,
+    etiquetaInterna: etiquetaInterna,
+    etiquetaFlotante: _modo == _Modo.recuperar,
+    relleno: relleno,
+    borde: relleno == ColoresApp.tarjeta
+        ? Colors.transparent
+        : (_modo == _Modo.registro ? ColoresApp.borde : ColoresApp.bordeAcceso),
+    radio: _modo == _Modo.registro
+        ? MedidasApp.radioCampoRegistro
+        : MedidasApp.radioControl,
+    icono: recurso == null
+        ? null
+        : Center(
+            widthFactor: 1,
+            heightFactor: 1,
+            child: SvgPicture.asset(
+              'assets/autenticacion/$recurso.svg',
+              width: MedidasApp.iconoCampo,
+              height: MedidasApp.iconoCampo,
             ),
-            enabledBorder: relleno == _panel
-                ? borde.copyWith(borderSide: BorderSide.none)
-                : borde,
-            focusedBorder: borde.copyWith(
-              borderSide: const BorderSide(color: _texto),
-            ),
-            border: borde,
-            prefixIcon: recurso == null
-                ? null
-                : Center(
-                    widthFactor: 1,
-                    heightFactor: 1,
-                    child: SvgPicture.asset(
-                      'assets/autenticacion/$recurso.svg',
-                      width: 20,
-                      height: 20,
-                    ),
-                  ),
-            prefixIconConstraints: const BoxConstraints(minWidth: 44),
-            suffixIcon: clave
-                ? IconButton(
-                    tooltip: _visible
-                        ? 'Ocultar contraseña'
-                        : 'Mostrar contraseña',
-                    onPressed: _ocupado
-                        ? null
-                        : () => setState(() => _visible = !_visible),
-                    icon: Icon(
-                      _visible
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                    ),
-                  )
-                : null,
           ),
-        ),
-      ],
-    );
-  }
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -273,7 +235,7 @@ class _PantallaLoginState extends State<PantallaLogin> {
       _Modo.restablecer => 'Crea una nueva contraseña',
     };
     final descripcion = switch (_modo) {
-      _Modo.login => _admin ? null : 'Accede a tu cuenta Tharpon MX',
+      _Modo.login => _admin ? null : 'Accede a tu cuenta',
       _Modo.registro => 'Únete a la comunidad de pesca deportiva.',
       _Modo.recuperar => 'Ingresa el correo asociado a tu cuenta.',
       _Modo.restablecer =>
@@ -286,8 +248,8 @@ class _PantallaLoginState extends State<PantallaLogin> {
       _Modo.restablecer => 'Guardar contraseña',
     };
     final relleno = registro
-        ? const Color(0xff262626)
-        : (panel ? const Color(0xff202020) : _panel);
+        ? ColoresApp.superficie
+        : (panel ? ColoresApp.campoAcceso : ColoresApp.tarjeta);
     final mensaje = _mensaje ?? widget.aviso;
 
     return _MarcoAcceso(
@@ -297,62 +259,40 @@ class _PantallaLoginState extends State<PantallaLogin> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (!loginAdmin) ...[
-            const SizedBox(height: 18),
+            const SizedBox(height: MedidasApp.normal),
             if (panel) ...[
               Center(
-                child: LogoTharpon(ancho: 148, alto: loginCliente ? 132 : 62),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'THARPON / MX',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1,
+                child: LogoTharpon(
+                  ancho: loginCliente ? 200 : 164,
+                  alto: loginCliente ? 124 : 102,
+                  variante: VarianteLogo.fondoOscuro,
                 ),
               ),
-              const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Tu próxima aventura comienza aquí',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: _secundario, fontSize: 13),
+                style: Theme.of(context).textTheme.bodySmall,
               ),
-              SizedBox(height: loginCliente ? 112 : 30),
-            ] else ...[
-              const Text(
-                'THARPON / MX',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ] else
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: LogoTharpon(
+                  ancho: 140,
+                  alto: 87,
+                  variante: VarianteLogo.fondoOscuro,
+                ),
               ),
-              const SizedBox(height: 62),
-            ],
-          ] else
-            const SizedBox(height: 136),
-          Text(
-            titulo,
-            style: TextStyle(
-              fontSize: registro ? 30 : 26,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          if (descripcion != null) ...[
-            const SizedBox(height: 8),
-            Text(descripcion, style: const TextStyle(color: _secundario)),
           ],
-          SizedBox(height: panel ? 20 : 30),
-          Container(
-            padding: panel ? const EdgeInsets.all(20) : EdgeInsets.zero,
-            decoration: panel
-                ? BoxDecoration(
-                    color: _panel,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: registro
-                          ? const Color(0xff3a3a3a)
-                          : const Color(0xffa0a0a0),
-                    ),
-                  )
-                : null,
+          const SizedBox(height: MedidasApp.amplio),
+          EncabezadoApp(
+            titulo: titulo,
+            descripcion: descripcion,
+            destacado: registro,
+          ),
+          const SizedBox(height: MedidasApp.interiorTarjeta),
+          _ContenedorFormulario(
+            panel: panel,
+            registro: registro,
             child: AutofillGroup(
               child: Form(
                 key: _formulario,
@@ -375,7 +315,7 @@ class _PantallaLoginState extends State<PantallaLogin> {
                               : null;
                         },
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: MedidasApp.medio),
                     ],
                     if (_modo != _Modo.restablecer)
                       _campo(
@@ -386,15 +326,13 @@ class _PantallaLoginState extends State<PantallaLogin> {
                         recurso: registro ? 'correo' : null,
                         relleno: relleno,
                         etiquetaInterna: !panel,
-                        validar: (s) =>
-                            RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
-                                .hasMatch(s?.trim() ?? '')
+                        validar: (s) => _formatoCorreo.hasMatch(s?.trim() ?? '')
                             ? null
                             : 'Escribe un correo válido.',
                       ),
                     if (_modo != _Modo.recuperar) ...[
                       if (_modo != _Modo.restablecer)
-                        const SizedBox(height: 12),
+                        const SizedBox(height: MedidasApp.medio),
                       _campo(
                         controller: _contrasena,
                         etiqueta: 'Contraseña',
@@ -417,43 +355,49 @@ class _PantallaLoginState extends State<PantallaLogin> {
                       ),
                     ],
                     if (_claveNueva) ...[
-                      const SizedBox(height: 10),
+                      const SizedBox(height: MedidasApp.pequeno),
                       ValueListenableBuilder(
                         valueListenable: _contrasena,
                         builder: (context, valor, _) => valor.text.isEmpty
-                            ? const Text(
+                            ? Text(
                                 'Usa al menos 8 caracteres.',
-                                style: TextStyle(
-                                  color: _secundario,
-                                  fontSize: 12,
-                                ),
+                                style: Theme.of(context).textTheme.labelMedium,
                               )
-                            : DecoratedBox(
-                                decoration: BoxDecoration(
-                                  color: const Color(0xff262626),
-                                  borderRadius: BorderRadius.circular(10),
+                            : Card(
+                                color: ColoresApp.superficie,
+                                margin: EdgeInsets.zero,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(
+                                      MedidasApp.radioCampoRegistro,
+                                    ),
+                                  ),
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.all(12),
+                                  padding: const EdgeInsets.all(
+                                    MedidasApp.medio,
+                                  ),
                                   child: Column(
                                     crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                        CrossAxisAlignment.stretch,
                                     children: [
-                                      const Text('Requisitos de contraseña'),
+                                      Text(
+                                        'Requisitos de contraseña',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleSmall,
+                                      ),
                                       for (final regla in _requisitos)
-                                        Text(
-                                          '${regla.$2(valor.text) ? '✓' : '○'}  ${regla.$1}',
-                                          style: const TextStyle(
-                                            color: _secundario,
-                                            fontSize: 12,
-                                          ),
+                                        IndicadorRequisito(
+                                          texto: regla.$1,
+                                          cumplido: regla.$2(valor.text),
                                         ),
                                     ],
                                   ),
                                 ),
                               ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: MedidasApp.medio),
                       _campo(
                         controller: _confirmacion,
                         etiqueta: 'Confirmar contraseña',
@@ -467,18 +411,43 @@ class _PantallaLoginState extends State<PantallaLogin> {
                             ? null
                             : 'Las contraseñas deben coincidir.',
                       ),
-                    ],
-                    const SizedBox(height: 16),
-                    FilledButton(
-                      style: FilledButton.styleFrom(
-                        alignment: panel
-                            ? Alignment.center
-                            : Alignment.centerLeft,
-                        minimumSize: Size.fromHeight(panel ? 50 : 44),
+                      const SizedBox(height: MedidasApp.pequeno),
+                      ListenableBuilder(
+                        listenable: Listenable.merge([
+                          _contrasena,
+                          _confirmacion,
+                        ]),
+                        builder: (context, _) => IndicadorRequisito(
+                          texto: 'Las contraseñas coinciden',
+                          cumplido:
+                              _confirmacion.text.isNotEmpty &&
+                              _confirmacion.text == _contrasena.text,
+                          error:
+                              _confirmacion.text.isNotEmpty &&
+                              _confirmacion.text != _contrasena.text,
+                        ),
                       ),
-                      onPressed: _ocupado ? null : _enviar,
-                      child: Text(accion),
-                    ),
+                    ],
+                    const SizedBox(height: MedidasApp.normal),
+                    if (registro)
+                      ListenableBuilder(
+                        listenable: _camposRegistro,
+                        builder: (context, _) => BotonPrincipal(
+                          texto: accion,
+                          icono: Icons.arrow_forward,
+                          alPulsar: _ocupado || !_registroValido
+                              ? null
+                              : _enviar,
+                        ),
+                      )
+                    else
+                      BotonPrincipal(
+                        texto: accion,
+                        alineacion: panel
+                            ? Alignment.center
+                            : AlignmentDirectional.centerStart,
+                        alPulsar: _ocupado ? null : _enviar,
+                      ),
                     if (loginCliente)
                       TextButton(
                         onPressed: _ocupado
@@ -490,7 +459,9 @@ class _PantallaLoginState extends State<PantallaLogin> {
                       child: _ocupado
                           ? const Padding(
                               key: ValueKey(TipoEstadoOperacion.carga),
-                              padding: EdgeInsets.only(top: 14),
+                              padding: EdgeInsets.only(
+                                top: MedidasApp.separacionCampo,
+                              ),
                               child: EstadoOperacion(
                                 tipo: TipoEstadoOperacion.carga,
                                 mensaje: 'Procesando solicitud…',
@@ -500,10 +471,17 @@ class _PantallaLoginState extends State<PantallaLogin> {
                           ? const SizedBox.shrink()
                           : Padding(
                               key: ValueKey((_tipo, mensaje)),
-                              padding: const EdgeInsets.only(top: 14),
-                              child: EstadoOperacion(
+                              padding: const EdgeInsets.only(
+                                top: MedidasApp.separacionCampo,
+                              ),
+                              child: NotificacionApp(
                                 tipo: _tipo,
                                 mensaje: mensaje,
+                                titulo:
+                                    _tipo == TipoEstadoOperacion.exito &&
+                                        _mensaje != null
+                                    ? 'Revisa tu correo'
+                                    : null,
                               ),
                             ),
                     ),
@@ -513,15 +491,15 @@ class _PantallaLoginState extends State<PantallaLogin> {
             ),
           ),
           if (loginAdmin) ...[
-            const SizedBox(height: 12),
-            const Text(
+            const SizedBox(height: MedidasApp.medio),
+            Text(
               'Solo personal autorizado',
-              style: TextStyle(color: _secundario),
+              style: Theme.of(context).textTheme.bodySmall,
             ),
-            const SizedBox(height: 110),
+            const SizedBox(height: MedidasApp.amplio),
           ],
           if (_modo == _Modo.login) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: MedidasApp.pequeno),
             _botonSecundario(
               '¿Olvidaste tu contraseña?',
               () => _cambiar(_Modo.recuperar),
@@ -536,7 +514,7 @@ class _PantallaLoginState extends State<PantallaLogin> {
             ),
           ] else if (_modo != _Modo.restablecer)
             Padding(
-              padding: const EdgeInsets.only(top: 16),
+              padding: const EdgeInsets.only(top: MedidasApp.normal),
               child: _botonSecundario(
                 registro
                     ? '¿Ya tienes cuenta? Inicia sesión'
@@ -554,16 +532,10 @@ class _PantallaLoginState extends State<PantallaLogin> {
     );
   }
 
-  Widget _botonSecundario(String texto, VoidCallback accion) => TextButton(
-    style: TextButton.styleFrom(
-      minimumSize: const Size.fromHeight(44),
-      alignment: _modo == _Modo.registro
-          ? Alignment.center
-          : Alignment.centerLeft,
-      backgroundColor: _modo == _Modo.registro ? null : const Color(0xff303030),
-    ),
-    onPressed: _ocupado ? null : accion,
-    child: Text(texto),
+  Widget _botonSecundario(String texto, VoidCallback accion) => BotonSecundario(
+    texto: texto,
+    enlace: _modo == _Modo.registro,
+    alPulsar: _ocupado ? null : accion,
   );
 
   Future<void> _cancelarRestablecimiento() async {
@@ -620,37 +592,55 @@ class _PantallaEstadoAccesoState extends State<PantallaEstadoAcceso> {
     final error = _error;
     return _MarcoAcceso(
       child: Padding(
-        padding: const EdgeInsets.only(top: 72),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Center(child: LogoTharpon(ancho: 148, alto: 112)),
-            const SizedBox(height: 24),
-            EstadoOperacion(
-              tipo: _ocupado
-                  ? TipoEstadoOperacion.carga
-                  : (error == null ? widget.tipo : tipoErrorAcceso(error)),
-              mensaje: _ocupado
-                  ? 'Cerrando sesión…'
-                  : (error == null
-                        ? widget.mensaje
-                        : mensajeErrorAcceso(error)),
-            ),
+        padding: const EdgeInsets.only(top: MedidasApp.amplio),
+        child: PanelEstadoApp(
+          tipo: _ocupado
+              ? TipoEstadoOperacion.carga
+              : (error == null ? widget.tipo : tipoErrorAcceso(error)),
+          mensaje: _ocupado
+              ? 'Cerrando sesión…'
+              : (error == null ? widget.mensaje : mensajeErrorAcceso(error)),
+          acciones: [
             if (widget.accion != null)
-              TextButton(
-                onPressed: _ocupado ? null : widget.accion,
-                child: const Text('Reintentar'),
+              BotonSecundario(
+                texto: 'Reintentar',
+                alPulsar: _ocupado ? null : widget.accion,
               ),
             if (widget.cerrarSesion != null)
-              TextButton(
-                onPressed: _ocupado ? null : _salir,
-                child: const Text('Cerrar sesión'),
+              BotonSecundario(
+                texto: 'Cerrar sesión',
+                enlace: true,
+                alPulsar: _ocupado ? null : _salir,
               ),
           ],
         ),
       ),
     );
   }
+}
+
+class _ContenedorFormulario extends StatelessWidget {
+  const _ContenedorFormulario({
+    required this.panel,
+    required this.registro,
+    required this.child,
+  });
+
+  final bool panel, registro;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => panel
+      ? TarjetaApp(
+          radio: registro
+              ? MedidasApp.radioTarjeta
+              : MedidasApp.radioTarjetaAcceso,
+          borde: registro
+              ? ColoresApp.seleccionado
+              : ColoresApp.bordeTarjetaAcceso,
+          child: child,
+        )
+      : child;
 }
 
 class _MarcoAcceso extends StatelessWidget {
@@ -664,85 +654,57 @@ class _MarcoAcceso extends StatelessWidget {
   final bool encabezadoAdmin;
 
   @override
-  Widget build(BuildContext context) {
-    final tema = ThemeData(
-      brightness: Brightness.dark,
-      colorScheme: const ColorScheme.dark(
-        primary: _accion,
-        onPrimary: _panel,
-        surface: _fondo,
-        onSurface: _texto,
-        error: _texto,
-        onError: _panel,
-      ),
-      filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-        ),
-      ),
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: _texto,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-        ),
-      ),
-    );
-    return Theme(
-      data: tema,
-      child: Scaffold(
-        backgroundColor: _fondo,
-        body: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (encabezadoAdmin)
-                  const DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: _panel,
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
+  Widget build(BuildContext context) => AnnotatedRegion<SystemUiOverlayStyle>(
+    value: TemaApp.barraSistema,
+    child: Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (encabezadoAdmin)
+                const ColoredBox(
+                  color: ColoresApp.tarjeta,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: MedidasApp.margenPantalla,
+                      vertical: MedidasApp.pequeno,
                     ),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 22,
-                        vertical: 16,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'THARPON / MX',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            'ADMINISTRACIÓN',
-                            style: TextStyle(fontSize: 10, color: _secundario),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 390),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(22, 0, 22, 22),
-                      child: child,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        LogoTharpon(
+                          ancho: 120,
+                          alto: 74,
+                          variante: VarianteLogo.fondoOscuro,
+                          alineacion: Alignment.centerLeft,
+                        ),
+                        Text('ADMINISTRACIÓN'),
+                      ],
                     ),
                   ),
                 ),
-              ],
-            ),
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: MedidasApp.anchoAcceso,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      MedidasApp.margenPantalla,
+                      0,
+                      MedidasApp.margenPantalla,
+                      MedidasApp.margenPantalla,
+                    ),
+                    child: AparicionApp(child: child),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }

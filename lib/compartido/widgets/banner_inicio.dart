@@ -93,7 +93,7 @@ class BannerInicio extends StatelessWidget {
 
         children: [
           // Icono principal.
-          Icon(icono, color: ColoresApp.azulOceano, size: 30),
+          Icon(icono, color: ColoresApp.etiqueta, size: 30),
 
           const SizedBox(height: 10),
 
@@ -103,7 +103,7 @@ class BannerInicio extends StatelessWidget {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: ColoresApp.azulMarino,
+              color: ColoresApp.textoPrincipal,
             ),
           ),
 
@@ -127,7 +127,7 @@ class BannerInicio extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: Icon(
               Icons.arrow_forward,
-              color: ColoresApp.azulOceano,
+              color: ColoresApp.etiqueta,
               size: 18,
             ),
           ),
@@ -145,7 +145,7 @@ class BannerInicio extends StatelessWidget {
     return Row(
       children: [
         // Icono representativo.
-        Icon(icono, color: ColoresApp.azulOceano, size: 34),
+        Icon(icono, color: ColoresApp.etiqueta, size: 34),
 
         const SizedBox(width: 16),
 
@@ -161,7 +161,7 @@ class BannerInicio extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: ColoresApp.azulMarino,
+                  color: ColoresApp.textoPrincipal,
                 ),
               ),
 
@@ -181,7 +181,7 @@ class BannerInicio extends StatelessWidget {
         const SizedBox(width: 8),
 
         // Indica que podemos abrir el módulo.
-        const Icon(Icons.chevron_right, color: ColoresApp.azulMarino),
+        const Icon(Icons.chevron_right, color: ColoresApp.textoPrincipal),
       ],
     );
   }

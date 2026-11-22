@@ -50,7 +50,13 @@ class PantallaInicio extends StatelessWidget {
               // LOGOTIPO OFICIAL
               // =====================================
 
-              const Center(child: LogoTarpon(ancho: 240, alto: 165)),
+              const Center(
+                child: LogoTharpon(
+                  ancho: 240,
+                  alto: 150,
+                  variante: VarianteLogo.fondoOscuro,
+                ),
+              ),
 
               const SizedBox(height: 20),
 

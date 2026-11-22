@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../compartido/servicios/servicio_autenticacion.dart';
 // Colores e identificadores de los módulos.
 import '../../nucleo/colores_app.dart';
+import '../../nucleo/medidas_app.dart';
 import '../../nucleo/modulo_app.dart';
 
 // Pantallas de la aplicación.
@@ -108,18 +109,28 @@ class _PantallaNavegacionState extends State<PantallaNavegacion> {
           // Identificador del módulo.
           value: ModuloApp.values[i],
 
-          child: Row(
-            children: [
-              Icon(iconos[i], color: ColoresApp.azulMarino),
+          padding: const EdgeInsets.symmetric(horizontal: MedidasApp.pequeno),
+          child: Container(
+            padding: const EdgeInsets.all(MedidasApp.pequeno),
+            decoration: BoxDecoration(
+              color: moduloActual == ModuloApp.values[i]
+                  ? ColoresApp.seleccionado
+                  : ColoresApp.opcionMenu,
+              borderRadius: BorderRadius.circular(MedidasApp.radioSecundario),
+            ),
+            child: Row(
+              children: [
+                Icon(iconos[i], color: ColoresApp.textoPrincipal),
 
-              const SizedBox(width: 12),
+                const SizedBox(width: 12),
 
-              Expanded(child: Text(nombres[i])),
+                Expanded(child: Text(nombres[i])),
 
-              // Indica la opción seleccionada.
-              if (moduloActual == ModuloApp.values[i])
-                const Icon(Icons.check, color: ColoresApp.azulOceano, size: 18),
-            ],
+                // Indica la opción seleccionada.
+                if (moduloActual == ModuloApp.values[i])
+                  const Icon(Icons.check, color: ColoresApp.etiqueta, size: 18),
+              ],
+            ),
           ),
         ),
     ];
@@ -138,11 +149,11 @@ class _PantallaNavegacionState extends State<PantallaNavegacion> {
       // Opciones que aparecerán al presionar.
       itemBuilder: (context) => construirOpciones(),
 
-      // Estilo del menú.
-      color: ColoresApp.blanco,
-      elevation: 5,
-
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      popUpAnimationStyle: AnimationStyle(
+        duration: MovimientoApp.duracion(context, MovimientoApp.menu),
+        curve: MovimientoApp.salida,
+        reverseCurve: MovimientoApp.entrada,
+      ),
 
       // Icono de tres líneas.
       icon: const Icon(Icons.menu),

@@ -1,5 +1,7 @@
 # tharpom_mx
 
+El [sistema visual de Flutter](docs/diseno/sistema_visual/README.md) documenta el tema oscuro, las variantes del logotipo, los componentes compartidos y las referencias de Figma.
+
 ## Autenticación de Tharpon MX
 
 Configura Flutter con la URL del proyecto y la clave publicable `sb_publishable_…` del [panel de Supabase](https://supabase.com/dashboard/project/higowqchuedxlxlpydso/settings/api-keys).

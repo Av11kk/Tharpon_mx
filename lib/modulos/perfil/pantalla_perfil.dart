@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../compartido/servicios/servicio_autenticacion.dart';
+import '../../compartido/widgets/controles_app.dart';
 import '../../compartido/widgets/estado_operacion.dart';
+import '../../nucleo/medidas_app.dart';
 import '../autenticacion/pantalla_login.dart';
 
 class PantallaPerfil extends StatefulWidget {
@@ -20,23 +22,12 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
 
   Future<void> _salir() async {
     try {
-      final confirmado = await showDialog<bool>(
-        context: context,
-        useRootNavigator: false,
-        builder: (context) => AlertDialog(
-          title: const Text('Cerrar sesión'),
-          content: const Text('¿Quieres cerrar tu sesión en este dispositivo?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Cerrar sesión'),
-            ),
-          ],
-        ),
+      final confirmado = await confirmarAccion(
+        context,
+        navegadorRaiz: false,
+        titulo: 'Cerrar sesión',
+        mensaje: '¿Quieres cerrar tu sesión en este dispositivo?',
+        accion: 'Cerrar sesión',
       );
       if (confirmado != true || !mounted) return;
       setState(() {
@@ -60,7 +51,7 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
       body: Center(
         child: ListView(
           shrinkWrap: true,
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(MedidasApp.amplio),
           children: [
             const Text('Perfil del Usuario', textAlign: TextAlign.center),
             if (perfil != null) ...[
@@ -72,7 +63,7 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
               ),
             ],
             if (widget.cerrarSesion != null) ...[
-              const SizedBox(height: 24),
+              const SizedBox(height: MedidasApp.amplio),
               OutlinedButton(
                 onPressed: _ocupado ? null : _salir,
                 child: const Text('Cerrar sesión'),

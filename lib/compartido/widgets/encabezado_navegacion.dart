@@ -2,114 +2,69 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../nucleo/colores_app.dart';
-import '../../nucleo/medidas_app.dart';
 
 class EncabezadoNavegacion extends StatelessWidget
     implements PreferredSizeWidget {
   const EncabezadoNavegacion({
     super.key,
-    required this.abrirMenu,
+    required this.abrirZona,
     required this.abrirPerfil,
+    required this.localidad,
   });
-
-  final VoidCallback abrirMenu, abrirPerfil;
+  final VoidCallback abrirZona, abrirPerfil;
+  final String localidad;
   @override
   Size get preferredSize => const Size.fromHeight(68);
-
   @override
   Widget build(BuildContext context) => AppBar(
     automaticallyImplyLeading: false,
     backgroundColor: ColoresApp.fondo,
-    toolbarHeight: preferredSize.height,
-    titleSpacing: MedidasApp.margenPantalla,
-    title: Row(
-      children: [
-        _AccionEncabezado(
-          key: const Key('boton_menu'),
-          etiqueta: 'Abrir menú',
-          alPulsar: abrirMenu,
-          icono: const Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: 20,
-                height: 2,
-                child: ColoredBox(color: ColoresApp.textoPrincipal),
-              ),
-              SizedBox(height: 5),
-              SizedBox(
-                width: 14,
-                height: 2,
-                child: ColoredBox(color: ColoresApp.textoPrincipal),
-              ),
-              SizedBox(height: 5),
-              SizedBox(
-                width: 20,
-                height: 2,
-                child: ColoredBox(color: ColoresApp.textoPrincipal),
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: MedidasApp.pequeno),
-            child: Text(
-              'TARPON MX',
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.titleMedium,
+    toolbarHeight: 68,
+    titleSpacing: 12,
+    title: TextButton.icon(
+      key: const Key('boton_zona'),
+      onPressed: abrirZona,
+      icon: const Icon(
+        Icons.location_on_outlined,
+        size: 19,
+        color: ColoresApp.acento,
+      ),
+      label: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'TARPON MX',
+            style: TextStyle(
+              fontSize: 10,
+              letterSpacing: 2,
+              color: ColoresApp.etiqueta,
             ),
           ),
-        ),
-        _AccionEncabezado(
-          key: const Key('boton_perfil'),
-          etiqueta: 'Abrir perfil',
-          alPulsar: abrirPerfil,
-          circular: true,
-          icono: SvgPicture.asset(
-            'assets/inicio/perfil.svg',
-            width: 46,
-            height: 46,
-            excludeFromSemantics: true,
+          Text(
+            localidad,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 13,
+              color: ColoresApp.textoPrincipal,
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
-
-class _AccionEncabezado extends StatelessWidget {
-  const _AccionEncabezado({
-    super.key,
-    required this.etiqueta,
-    required this.alPulsar,
-    required this.icono,
-    this.circular = false,
-  });
-
-  final String etiqueta;
-  final VoidCallback alPulsar;
-  final Widget icono;
-  final bool circular;
-
-  @override
-  Widget build(BuildContext context) => IconButton(
-    tooltip: etiqueta,
-    onPressed: alPulsar,
-    icon: icono,
-    style: IconButton.styleFrom(
-      backgroundColor: circular ? Colors.transparent : ColoresApp.tarjeta,
-      padding: EdgeInsets.zero,
-      fixedSize: const Size.square(MedidasApp.altoControl),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(circular ? 48 : 16),
-        side: circular
-            ? BorderSide.none
-            : const BorderSide(color: ColoresApp.bordeTarjetaAcceso),
+        ],
       ),
     ),
+    actions: [
+      IconButton(
+        key: const Key('boton_perfil'),
+        tooltip: 'Abrir perfil',
+        onPressed: abrirPerfil,
+        icon: SvgPicture.asset(
+          'assets/inicio/perfil.svg',
+          width: 42,
+          height: 42,
+          excludeFromSemantics: true,
+        ),
+      ),
+      const SizedBox(width: 10),
+    ],
   );
 }

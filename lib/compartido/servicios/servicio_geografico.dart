@@ -281,7 +281,7 @@ class RepositorioGeo {
       'relative_humidity_2m,surface_pressure,cloud_cover,precipitation,wind_speed_10m,'
       'wind_direction_10m,wind_gusts_10m';
   static const variablesHora =
-      'temperature_2m,is_day,weather_code,visibility,precipitation_probability,precipitation,uv_index';
+      'temperature_2m,is_day,weather_code,visibility,precipitation_probability,precipitation,uv_index,wind_speed_10m';
   static const variablesDia =
       'weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max';
   static const variablesMar = 'wave_height,wave_direction,wave_period';

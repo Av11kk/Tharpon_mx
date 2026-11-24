@@ -42,7 +42,12 @@ class _PantallaInicioState extends State<PantallaInicio> {
         onRefresh: _actualizar,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(22, 16, 22, 24),
+          padding: EdgeInsets.fromLTRB(
+            22,
+            16,
+            22,
+            24 + MediaQuery.paddingOf(context).bottom,
+          ),
           children: [
             Text('¡Buena pesca!', style: texto.headlineMedium),
             const SizedBox(height: MedidasApp.pequeno),

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'compartido/servicios/almacen_sesion.dart';
@@ -9,8 +10,9 @@ import 'modulos/autenticacion/pantalla_login.dart';
 import 'modulos/inicio/pantalla_bienvenida.dart';
 import 'nucleo/tema_app.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await LiquidGlassWidgets.initialize();
   const url = String.fromEnvironment('SUPABASE_URL');
   const clave = String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
   const retornoWeb = String.fromEnvironment('SUPABASE_AUTH_REDIRECT_URL');
@@ -107,6 +109,10 @@ class TarponMX extends StatelessWidget {
     final autenticacion = servicio;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      builder: (context, child) => LiquidGlassWidgets.wrap(
+        brightnessResolver: Theme.maybeBrightnessOf,
+        child: child!,
+      ),
       theme: TemaApp.oscuro,
       home: inicializacion != null
           ? FutureBuilder<ServicioAutenticacion>(

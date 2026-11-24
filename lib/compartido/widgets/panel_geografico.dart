@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -8,6 +7,7 @@ import '../servicios/servicio_geografico.dart';
 import 'contenido_cliente.dart';
 import 'controles_app.dart';
 import 'estado_operacion.dart';
+import 'grafica_condiciones.dart';
 
 class EntornoGeo {
   EntornoGeo({RepositorioGeo? repositorio})
@@ -61,12 +61,26 @@ class EntornoGeo {
   // Las pantallas consumen el error cuando se muestran.
   void manejar(Future<void> futuro) => futuro.ignore();
 
+  bool _aplicando = false;
+
+  /// Publica ambas selecciones antes de iniciar las consultas compartidas.
+  void aplicarLocalidades(Localidad sitio, Localidad zonaCostera) {
+    _aplicando = true;
+    localidad.value = sitio;
+    costa.value = zonaCostera;
+    _aplicando = false;
+    actualizarClima();
+    actualizarMar();
+  }
+
   void actualizarClima() {
+    if (_aplicando) return;
     clima.value = repo.clima(localidad.value, renovar: true);
     manejar(clima.value);
   }
 
   void actualizarMar() {
+    if (_aplicando) return;
     mar.value = repo.mar(costa.value, renovar: true);
     manejar(mar.value);
   }
@@ -282,73 +296,11 @@ class GraficaGeo extends StatelessWidget {
   });
   final String titulo, campo, unidad;
   final List<PasoGeo> pasos;
-
   @override
-  Widget build(BuildContext context) {
-    final valores = pasos.map((paso) => paso.numero(campo)).toList();
-    final presentes = valores.whereType<double>().toList();
-    if (presentes.isEmpty) {
-      return TarjetaApp(child: Text('$titulo · Sin datos'));
-    }
-    final minimo = presentes.reduce(math.min);
-    final maximo = presentes.reduce(math.max);
-    return TarjetaApp(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        spacing: 10,
-        children: [
-          Text(titulo, style: Theme.of(context).textTheme.titleMedium),
-          Text(
-            '${medidaGeo(minimo, unidad, decimales: 1)} – ${medidaGeo(maximo, unidad, decimales: 1)}',
-          ),
-          SizedBox(
-            height: 90,
-            child: CustomPaint(painter: _TrazoGeo(valores, minimo, maximo)),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(horaGeo(pasos.first.hora)),
-              Text(horaGeo(pasos.last.hora)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TrazoGeo extends CustomPainter {
-  const _TrazoGeo(this.valores, this.minimo, this.maximo);
-  final List<double?> valores;
-  final double minimo, maximo;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rango = maximo - minimo;
-    final pintura = Paint()
-      ..color = const Color(0xffe0e0e0)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-    Offset? anterior;
-    for (var i = 0; i < valores.length; i++) {
-      final valor = valores[i];
-      if (valor == null) {
-        anterior = null;
-        continue;
-      }
-      final punto = Offset(
-        i * size.width / math.max(1, valores.length - 1),
-        size.height * (rango == 0 ? .5 : 1 - (valor - minimo) / rango),
-      );
-      if (anterior case final previo?) {
-        canvas.drawLine(previo, punto, pintura);
-      }
-      canvas.drawCircle(punto, 1.4, pintura);
-      anterior = punto;
-    }
-  }
-
-  @override
-  bool shouldRepaint(_TrazoGeo oldDelegate) => oldDelegate.valores != valores;
+  Widget build(BuildContext context) => GraficaCondiciones(
+    titulo: titulo,
+    pasos: pasos,
+    campo: campo,
+    unidad: unidad,
+  );
 }

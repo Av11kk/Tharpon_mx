@@ -4,6 +4,7 @@ import '../../compartido/servicios/servicio_geografico.dart';
 import '../../compartido/widgets/contenido_cliente.dart';
 import '../../compartido/widgets/controles_app.dart';
 import '../../compartido/widgets/panel_geografico.dart';
+import '../../compartido/widgets/selector_zona.dart';
 
 class PantallaClima extends StatelessWidget {
   const PantallaClima({super.key, required this.entorno});
@@ -25,12 +26,7 @@ class PantallaClima extends StatelessWidget {
           children: [
             BotonSecundario(
               texto: 'Elegir localidad',
-              alPulsar: () async {
-                final seleccion = await elegirLocalidad(context, entorno);
-                if (context.mounted && seleccion != null) {
-                  entorno.localidad.value = seleccion;
-                }
-              },
+              alPulsar: () => configurarZona(context, entorno),
             ),
             IconButton(
               tooltip: 'Actualizar clima',
@@ -42,15 +38,15 @@ class PantallaClima extends StatelessWidget {
         ConsultaGeo(
           consulta: entorno.clima,
           recargar: entorno.actualizarClima,
-          builder: (datos) => _Pronostico(datos: datos),
+          builder: (datos) => PronosticoClima(datos: datos),
         ),
       ],
     ),
   );
 }
 
-class _Pronostico extends StatelessWidget {
-  const _Pronostico({required this.datos});
+class PronosticoClima extends StatelessWidget {
+  const PronosticoClima({super.key, required this.datos});
   final RespuestaGeo<PronosticoGeo> datos;
 
   @override
@@ -160,37 +156,44 @@ class _Pronostico extends StatelessWidget {
             ],
           ),
         ),
-        Text('Detalles del clima', style: texto.titleLarge),
-        for (final (etiqueta, medida) in [
-          (
-            'Viento',
-            '${valor('wind_speed_10m', ' km/h')} ${rumboViento(actual.numero('wind_direction_10m'))}',
+        TarjetaApp(
+          child: ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            title: const Text('Detalles del clima'),
+            children: [
+              for (final (etiqueta, medida) in [
+                (
+                  'Viento',
+                  '${valor('wind_speed_10m', ' km/h')} ${rumboViento(actual.numero('wind_direction_10m'))}',
+                ),
+                ('Ráfagas', valor('wind_gusts_10m', ' km/h')),
+                ('Humedad', valor('relative_humidity_2m', ' %')),
+                ('Presión en superficie', valor('surface_pressure', ' hPa')),
+                (
+                  'Visibilidad horaria',
+                  medidaGeo(
+                    _kilometros(proxima?.numero('visibility')),
+                    ' km',
+                    decimales: 1,
+                  ),
+                ),
+                (
+                  'Índice UV horario',
+                  medidaGeo(proxima?.numero('uv_index'), '', decimales: 1),
+                ),
+                ('Nubosidad', valor('cloud_cover', ' %')),
+                (
+                  'Probabilidad de lluvia horaria',
+                  medidaGeo(proxima?.numero('precipitation_probability'), ' %'),
+                ),
+                ('Precipitación', valor('precipitation', ' mm', decimales: 1)),
+                ('Amanecer', horaGeo(hoy?.texto('sunrise') ?? '')),
+                ('Atardecer', horaGeo(hoy?.texto('sunset') ?? '')),
+              ])
+                FichaCliente(titulo: etiqueta, subtitulo: medida),
+            ],
           ),
-          ('Ráfagas', valor('wind_gusts_10m', ' km/h')),
-          ('Humedad', valor('relative_humidity_2m', ' %')),
-          ('Presión en superficie', valor('surface_pressure', ' hPa')),
-          (
-            'Visibilidad horaria',
-            medidaGeo(
-              _kilometros(proxima?.numero('visibility')),
-              ' km',
-              decimales: 1,
-            ),
-          ),
-          (
-            'Índice UV horario',
-            medidaGeo(proxima?.numero('uv_index'), '', decimales: 1),
-          ),
-          ('Nubosidad', valor('cloud_cover', ' %')),
-          (
-            'Probabilidad de lluvia horaria',
-            medidaGeo(proxima?.numero('precipitation_probability'), ' %'),
-          ),
-          ('Precipitación', valor('precipitation', ' mm', decimales: 1)),
-          ('Amanecer', horaGeo(hoy?.texto('sunrise') ?? '')),
-          ('Atardecer', horaGeo(hoy?.texto('sunset') ?? '')),
-        ])
-          FichaCliente(titulo: etiqueta, subtitulo: medida),
+        ),
         GraficaGeo(
           titulo: 'Temperatura por hora',
           pasos: pronostico.siguientes,

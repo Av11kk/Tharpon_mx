@@ -1,3 +1,5 @@
+import 'superficie_cristal.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../nucleo/colores_app.dart';
@@ -172,16 +174,11 @@ class TarjetaApp extends StatelessWidget {
   final double radio;
 
   @override
-  Widget build(BuildContext context) => Card(
-    margin: EdgeInsets.zero,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(radio),
-      side: borde == null ? BorderSide.none : BorderSide(color: borde!),
-    ),
-    child: Padding(
-      padding: const EdgeInsets.all(MedidasApp.interiorTarjeta),
-      child: child,
-    ),
+  Widget build(BuildContext context) => SuperficieCristal(
+    radio: radio,
+    borde: borde,
+    padding: const EdgeInsets.all(MedidasApp.interiorTarjeta),
+    child: child,
   );
 }
 

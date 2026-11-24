@@ -12,7 +12,7 @@ import 'package:tarpon_mx/main.dart';
 import 'package:tarpon_mx/nucleo/colores_app.dart';
 
 // Pantalla utilizada para verificar la navegación.
-import 'package:tarpon_mx/modulos/clima/pantalla_clima.dart';
+import 'package:tarpon_mx/modulos/condiciones/pantalla_condiciones.dart';
 import 'package:tarpon_mx/modulos/inicio/pantalla_bienvenida.dart';
 
 /// =====================================================
@@ -61,32 +61,22 @@ void main() {
     expect(find.text('Bienvenido de nuevo'), findsOneWidget);
   });
 
-  testWidgets('Menú permite cerrar, pulsar Atrás y elegir un módulo', (
+  testWidgets('La barra inferior reemplaza el menú y abre Condiciones', (
     tester,
   ) async {
     await abrirApp(tester);
-    final boton = find.byKey(const Key('boton_menu'));
-    final menu = find.byKey(const Key('menu_lateral'));
-    await tester.tap(boton);
+    expect(find.byKey(const Key('boton_menu')), findsNothing);
+    await tester.tapAt(tester.getCenter(find.text('Condiciones').last));
     await tester.pumpAndSettle();
-    expect(menu, findsOneWidget);
-    await tester.tap(find.byKey(const Key('cerrar_menu')));
+    expect(find.text('CIELO + MAR'), findsOneWidget);
+    expect(find.byType(TabBar), findsNothing);
+    await tester.tapAt(tester.getCenter(find.text('Explorar').last));
     await tester.pumpAndSettle();
-    expect(menu, findsNothing);
-    await tester.tap(boton);
-    await tester.pumpAndSettle();
-    await tester.binding.handlePopRoute();
-    await tester.pumpAndSettle();
-    expect(menu, findsNothing);
-    await tester.tap(boton);
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('opcion_mareas')));
-    await tester.pumpAndSettle();
-    expect(find.text('Información de Mareas'), findsOneWidget);
-    expect(menu, findsNothing);
+    expect(find.text('Especies de peces'), findsOneWidget);
+    expect(find.text('Consejos'), findsOneWidget);
   });
 
-  testWidgets('Menú y diálogo de cierre funcionan en una pantalla pequeña', (
+  testWidgets('Perfil y cierre funcionan en una pantalla pequeña', (
     tester,
   ) async {
     tester.view.devicePixelRatio = 1;
@@ -94,13 +84,12 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
     final servicio = await abrirApp(tester);
-    final boton = find.byKey(const Key('boton_menu'));
     Future<void> abrirCierre() async {
-      await tester.tap(boton);
-      await tester.pumpAndSettle();
-      final salir = find.byKey(const Key('menu_cerrar_sesion'));
-      await tester.ensureVisible(salir);
-      await tester.tap(salir);
+      if (find.text('Perfil del Usuario').evaluate().isEmpty) {
+        await tester.tap(find.byKey(const Key('boton_perfil')));
+        await tester.pumpAndSettle();
+      }
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Cerrar sesión'));
       await tester.pumpAndSettle();
     }
 
@@ -108,7 +97,7 @@ void main() {
     await tester.tap(find.text('Cancelar'));
     await tester.pumpAndSettle();
     expect(servicio.sesion, isNotNull);
-    expect(find.text('¡Buena pesca!'), findsOneWidget);
+    expect(find.text('Perfil del Usuario'), findsOneWidget);
     await abrirCierre();
     await tester.tap(find.widgetWithText(FilledButton, 'Cerrar sesión'));
     await tester.pumpAndSettle();
@@ -415,7 +404,7 @@ void main() {
     expect(find.byType(AppBar), findsOneWidget);
 
     // Verifica los botones principales.
-    expect(find.byKey(const Key('boton_menu')), findsOneWidget);
+    expect(find.byKey(const Key('boton_zona')), findsOneWidget);
 
     expect(find.byKey(const Key('boton_perfil')), findsOneWidget);
   });
@@ -424,27 +413,17 @@ void main() {
   // PRUEBA 2: MENÚ DESPLEGABLE
   // ===================================================
 
-  testWidgets('El menú muestra los siete módulos', (WidgetTester tester) async {
+  testWidgets('El selector global se puede cancelar sin cambiar de pantalla', (
+    tester,
+  ) async {
     await abrirApp(tester);
-
-    // Presiona el botón superior izquierdo.
-    await tester.tap(find.byKey(const Key('boton_menu')));
-
-    // Espera a que termine la animación del menú.
+    await tester.tap(find.byKey(const Key('boton_zona')));
     await tester.pumpAndSettle();
-
-    // Verifica que existan los siete módulos.
-    for (final modulo in [
-      'inicio',
-      'especies',
-      'clima',
-      'mareas',
-      'mapa',
-      'equipo',
-      'consejos',
-    ]) {
-      expect(find.byKey(Key('opcion_$modulo')), findsOneWidget);
-    }
+    expect(find.text('Tu zona de pesca'), findsOneWidget);
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Tu zona de pesca'), findsNothing);
+    expect(find.text('¡Buena pesca!'), findsOneWidget);
   });
 
   // ===================================================
@@ -471,7 +450,7 @@ void main() {
     //
     // skipOffstage: false permite localizar
     // widgets que están dentro de IndexedStack.
-    final pantallaClima = find.byType(PantallaClima, skipOffstage: false);
+    final pantallaClima = find.byType(PantallaCondiciones, skipOffstage: false);
 
     // Verificamos que la pantalla existe.
     expect(pantallaClima, findsOneWidget);

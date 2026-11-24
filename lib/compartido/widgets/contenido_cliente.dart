@@ -101,7 +101,12 @@ class ListaCliente extends StatelessWidget {
   final List<Widget> children;
   @override
   Widget build(BuildContext context) => ListView.separated(
-    padding: const EdgeInsets.all(MedidasApp.margenPantalla),
+    padding: EdgeInsets.fromLTRB(
+      MedidasApp.margenPantalla,
+      MedidasApp.margenPantalla,
+      MedidasApp.margenPantalla,
+      MedidasApp.margenPantalla + MediaQuery.paddingOf(context).bottom,
+    ),
     itemCount: children.length,
     separatorBuilder: (_, _) => const SizedBox(height: MedidasApp.medio),
     itemBuilder: (_, i) => children[i],

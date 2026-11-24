@@ -27,8 +27,8 @@ abstract final class TemaApp {
     fontFamily: familia,
     brightness: Brightness.dark,
     colorScheme: const ColorScheme.dark(
-      primary: ColoresApp.accion,
-      onPrimary: ColoresApp.tarjeta,
+      primary: ColoresApp.primario,
+      onPrimary: ColoresApp.textoPrincipal,
       secondary: ColoresApp.etiqueta,
       onSecondary: ColoresApp.tarjeta,
       surface: ColoresApp.fondo,

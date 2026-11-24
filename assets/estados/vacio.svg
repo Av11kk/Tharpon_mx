@@ -1,0 +1,16 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="180" height="96" viewBox="0 0 180 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Frame">
+<g id="Group">
+<path id="Vector" d="M18 48C34.6667 26 60.3333 21.6667 95 35L126 44L151 20L145 48L153 75L125 53C82.3333 71.6667 46.6667 70 18 48Z" fill="#454545" stroke-width="1.8" stroke-linejoin="round" stroke="#DADADA"/>
+<path id="Vector_2" d="M57 31L78 9L98 34M64 64L86 80L99 60" fill="#303030" stroke-width="1.8" stroke-linejoin="round" stroke="#DADADA"/>
+<path id="Vector_3" d="M43 35C35.6667 44.3333 36 53.3333 44 62M18 48L34 46M48 52C67.3333 57.3333 90.6667 56 118 48" stroke-width="1.8" stroke-linejoin="round" stroke="#DADADA"/>
+<path id="Vector_4" d="M30 43C31.6569 43 33 41.6569 33 40C33 38.3431 31.6569 37 30 37C28.3431 37 27 38.3431 27 40C27 41.6569 28.3431 43 30 43Z" fill="#F5F5F5" stroke-width="1.8" stroke-linejoin="round" stroke="#DADADA"/>
+<path id="Vector_5" d="M60 38L68 44L60 50M76 38L84 44L76 50M92 39L100 45L92 51" stroke-width="1.8" stroke-linejoin="round" stroke="#858585"/>
+</g>
+<path id="Vector_6" d="M10 88C20 84.6667 30 84.6667 40 88C50 91.3333 60 91.3333 70 88C80 84.6667 90 84.6667 100 88C110 91.3333 120 91.3333 130 88C140 84.6667 150 84.6667 160 88" stroke="#777777"/>
+<g id="Vector_7">
+<path d="M140 8V22ZM133 15H147Z" fill="black"/>
+<path d="M140 8V22M133 15H147" stroke="#BEBEBE"/>
+</g>
+</g>
+</svg>

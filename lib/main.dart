@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+<<<<<<< HEAD
 import 'compartido/servicios/almacen_sesion.dart';
 import 'compartido/servicios/servicio_autenticacion.dart';
 import 'modulos/autenticacion/control_acceso.dart';
@@ -137,6 +138,29 @@ class TarponMX extends StatelessWidget {
               mensaje: errorInicio ?? 'Configura SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY para continuar.',
             )
           : ControlAcceso(servicio: autenticacion),
+=======
+import 'package:forui/forui.dart';
+import 'package:tharpom_mx/modulos/inicio/pantalla_inicio.dart';
+
+void main() {
+  runApp(const TarponApp());
+}
+
+class TarponApp extends StatelessWidget {
+  const TarponApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FTheme.neutral.light.touch;
+
+    return MaterialApp(
+      title: 'Tarpon',
+
+      supportedLocales: FLocalizations.supportedLocales,
+      localizationsDelegates: const [...FLocalizations.localizationsDelegates],
+      builder: (context, child) => FTheme(data: theme, child: child!),
+      home: const PantallaInicio(),
+>>>>>>> c268b89c42e3fce6a2329e3909f014ebd7223ec9
     );
   }
 }

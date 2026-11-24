@@ -41,6 +41,7 @@ dependencies:
 
   # Proporciona iconos de estilo Cupertino.
   cupertino_icons: ^1.0.8
+<<<<<<< HEAD
   http: ^1.6.0
   supabase_flutter: ^2.18.3
   flutter_svg: ^2.5.0
@@ -56,6 +57,9 @@ dependencies:
 # =====================================================
 # DEPENDENCIAS PARA DESARROLLO
 # =====================================================
+=======
+  forui: ^0.27.7
+>>>>>>> c268b89c42e3fce6a2329e3909f014ebd7223ec9
 
 dev_dependencies:
 
